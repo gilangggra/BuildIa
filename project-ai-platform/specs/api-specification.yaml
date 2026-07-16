@@ -1,0 +1,255 @@
+
+---
+
+### 9. `specs/api-specification.yaml`
+```yaml
+openapi: 3.0.0
+info:
+  title: AI-Powered Development Platform API
+  version: 1.0.0
+  description: API untuk platform pengembangan software terintegrasi dengan AI
+
+servers:
+  - url: https://api.dev-platform.com/v1
+  - url: http://localhost:3000/v1
+
+paths:
+  /projects:
+    get:
+      summary: Get user projects
+      security: [{ bearerAuth: [] }]
+      responses:
+        200:
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Project' }
+    
+    post:
+      summary: Create new project
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                description: { type: string }
+                template: { type: string, enum: [web-app, api, mobile, fullstack] }
+      responses:
+        201:
+          description: Project created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Project' }
+
+  /projects/{projectId}:
+    get:
+      summary: Get project details
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: projectId, in: path, required: true, schema: { type: string } }
+      responses:
+        200:
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Project' }
+
+  /projects/{projectId}/artefacts:
+    get:
+      summary: Get all artefacts
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: projectId, in: path, required: true, schema: { type: string } }
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Artefact' }
+    
+    post:
+      summary: Generate new artefact
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: projectId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type: { type: string, enum: [srs, diagram, code, deployment, test] }
+                agentType: { type: string, enum: [ideator, documenter, diagrammer, coder, deployer] }
+                prompt: { type: string }
+      responses:
+        202:
+          description: Generation started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessionId: { type: string }
+                  status: { type: string }
+
+  /projects/{projectId}/artefacts/{artefactId}:
+    get:
+      summary: Get artefact details
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: projectId, in: path, required: true, schema: { type: string } }
+        - { name: artefactId, in: path, required: true, schema: { type: string } }
+      responses:
+        200:
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Artefact' }
+    
+    put:
+      summary: Update artefact
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: projectId, in: path, required: true, schema: { type: string } }
+        - { name: artefactId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content: { type: string }
+                status: { type: string, enum: [draft, review, approved, final] }
+      responses:
+        200:
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Artefact' }
+
+  /projects/{projectId}/review/{artefactId}:
+    post:
+      summary: Submit artefact for review
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: projectId, in: path, required: true, schema: { type: string } }
+        - { name: artefactId, in: path, required: true, schema: { type: string } }
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewReport'
+
+  /projects/{projectId}/deploy:
+    post:
+      summary: Deploy project
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: projectId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                environment: { type: string, enum: [staging, production] }
+      responses:
+        202:
+          description: Deployment started
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Deployment' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string }
+        name: { type: string }
+        role: { type: string, enum: [admin, developer, viewer] }
+
+    Project:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: string }
+        template: { type: string, enum: [web-app, api, mobile, fullstack] }
+        status: { type: string, enum: [draft, active, archived, deployed] }
+        ownerId: { type: string }
+        teamMembers:
+          type: array
+          items:
+            type: object
+            properties:
+              userId: { type: string }
+              role: { type: string, enum: [admin, editor, viewer] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    Artefact:
+      type: object
+      properties:
+        id: { type: string }
+        projectId: { type: string }
+        type: { type: string, enum: [srs, diagram, code, deployment, test] }
+        name: { type: string }
+        content: { type: string }
+        format: { type: string, enum: [markdown, json, yaml, code, mermaid] }
+        version: { type: string }
+        status: { type: string, enum: [draft, review, approved, final] }
+        dependencies:
+          type: array
+          items: { type: string }
+        generatedBy: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    ReviewReport:
+      type: object
+      properties:
+        artefactId: { type: string }
+        scores:
+          type: object
+          properties:
+            consistency: { type: number, minimum: 1, maximum: 10 }
+            completeness: { type: number, minimum: 1, maximum: 10 }
+            quality: { type: number, minimum: 1, maximum: 10 }
+            security: { type: number, minimum: 1, maximum: 10 }
+        issues:
+          type: array
+          items:
+            type: object
+            properties:
+              severity: { type: string, enum: [critical, high, medium, low] }
+              description: { type: string }
+        verdict:
+          type: string
+          enum: [approved, needs-improvement, rejected]
+        recommendations:
+          type: array
+          items: { type: string }
+
+    Deployment:
+      type: object
+      properties:
+        id: { type: string }
+        projectId: { type: string }
+        environment: { type: string, enum: [staging, production] }
+        status: { type: string, enum: [pending, running, success, failed] }
+        url: { type: string }
+        logs: { type: array, items: { type: string } }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
