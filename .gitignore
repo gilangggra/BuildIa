@@ -1,0 +1,30 @@
+# ============================================
+# SEMBUNYIKAN SEMUA FILE PROJECT
+# ============================================
+
+# Folder project utama
+project-ai-platform/
+**/project-ai-platform/
+
+# File-file spesifik
+README.md
+*.md
+!README.md  # Kalau mau tetap tampilkan README (opsional)
+
+# Environment
+.env
+.env.*
+*.env
+
+# Node
+node_modules/
+dist/
+*.tsbuildinfo
+package-lock.json
+yarn.lock
+
+# OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
