@@ -9,7 +9,10 @@ export class SupabaseService {
 
   constructor(private configService: ConfigService) {
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-    const supabaseKey = this.configService.get<string>('SUPABASE_ANON_KEY');
+    // Using service role key for backend to bypass RLS safely
+    const supabaseKey = this.configService.get<string>(
+      'SUPABASE_SERVICE_ROLE_KEY',
+    );
 
     if (!supabaseUrl || !supabaseKey) {
       this.logger.warn('Supabase URL or Key is missing. Check your .env file.');

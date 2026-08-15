@@ -1,8 +1,16 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { ProjectsService } from './projects.service';
-import { AuthGuard } from '@nestjs/passport';
+import { SupabaseGuard } from '../auth/supabase.guard';
 
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(SupabaseGuard)
 @Controller('v1/projects')
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
@@ -20,5 +28,10 @@ export class ProjectsController {
   @Get(':id')
   findOne(@Request() req, @Param('id') id: string) {
     return this.projectsService.findOne(req.user.userId, id);
+  }
+
+  @Post(':id/deploy/github')
+  deployToGithub(@Request() req, @Param('id') id: string) {
+    return this.projectsService.deployToGithub(req.user.userId, id);
   }
 }

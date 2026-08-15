@@ -6,11 +6,18 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-[#0f172a] text-slate-100">
-      <Sidebar />
-      <div className="ml-60">
-        {/* Top Header */}
-        <header className="h-14 border-b border-slate-800 px-6 flex items-center justify-between bg-[#0f172a]/80 sticky top-0 z-10 backdrop-blur-sm">
+    <div className="min-h-screen bg-[#06090F] text-slate-100 relative overflow-hidden">
+      {/* Ambient Background Glows */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[40%] h-[50%] bg-indigo-600/10 rounded-full blur-[120px]" />
+      </div>
+
+      <div className="relative z-10 flex">
+        <Sidebar />
+        <div className="flex-1 ml-60 flex flex-col min-h-screen">
+          {/* Top Header */}
+          <header className="h-16 border-b border-white/5 px-8 flex items-center justify-between bg-[#06090F]/60 sticky top-0 z-10 backdrop-blur-xl">
           <p className="text-sm text-slate-400">
             AI-Powered Development Platform
           </p>
@@ -21,10 +28,11 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="p-6 md:p-8">
-          {children}
-        </main>
+          {/* Page Content */}
+          <main className="p-8 md:p-10 flex-1">
+            {children}
+          </main>
+        </div>
       </div>
     </div>
   );

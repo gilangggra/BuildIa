@@ -1,8 +1,16 @@
-import { Controller, Get, Post, Put, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Body,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { ArtefactsService } from './artefacts.service';
-import { AuthGuard } from '@nestjs/passport';
+import { SupabaseGuard } from '../auth/supabase.guard';
 
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(SupabaseGuard)
 @Controller('v1/projects/:projectId/artefacts')
 export class ArtefactsController {
   constructor(private readonly artefactsService: ArtefactsService) {}
@@ -24,7 +32,11 @@ export class ArtefactsController {
   }
 
   @Put(':id')
-  update(@Param('projectId') projectId: string, @Param('id') id: string, @Body() updateDto: any) {
+  update(
+    @Param('projectId') projectId: string,
+    @Param('id') id: string,
+    @Body() updateDto: any,
+  ) {
     return this.artefactsService.update(projectId, id, updateDto);
   }
 }

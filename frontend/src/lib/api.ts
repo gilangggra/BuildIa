@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from './supabase';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -38,6 +39,8 @@ export const api = {
     get: (id: string) => request<any>(`/v1/projects/${id}`),
     create: (data: { name: string; description?: string; template?: string }) =>
       request<any>('/v1/projects', { method: 'POST', body: JSON.stringify(data) }),
+    deployToGithub: (id: string) =>
+      request<any>(`/v1/projects/${id}/deploy/github`, { method: 'POST' }),
   },
   artefacts: {
     list: (projectId: string) => request<any[]>(`/v1/projects/${projectId}/artefacts`),
