@@ -59,5 +59,18 @@ export const api = {
         method: 'PUT',
         body: JSON.stringify(data),
       }),
+    refactor: (projectId: string, id: string, prompt: string) =>
+      request<any>(`/v1/projects/${projectId}/artefacts/${id}/refactor`, {
+        method: 'POST',
+        body: JSON.stringify({ prompt }),
+      }),
+  },
+  agents: {
+    list: () => request<any[]>('/v1/agents'),
+    create: (data: { label: string; description: string; type: string; system_prompt: string; icon_name?: string }) =>
+      request<any>('/v1/agents', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
   },
 };

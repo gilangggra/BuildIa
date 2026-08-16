@@ -109,14 +109,15 @@ export default function SettingsPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-left
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 text-left group
                     ${isActive 
-                      ? "bg-slate-800 border border-slate-700/50 text-slate-100" 
-                      : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 border border-transparent"
+                      ? "bg-blue-500/10 border border-blue-500/20 text-blue-400 shadow-[inset_0_0_20px_rgba(59,130,246,0.05)]" 
+                      : "text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent"
                     }`}
                 >
-                  <tab.icon className={`h-4 w-4 ${isActive ? "text-blue-400" : "text-slate-500"}`} />
+                  <tab.icon className={`h-4 w-4 transition-colors ${isActive ? "text-blue-400" : "text-slate-500 group-hover:text-slate-400"}`} />
                   {tab.label}
+                  {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)]" />}
                 </button>
               );
             })}
@@ -125,52 +126,56 @@ export default function SettingsPage() {
 
         {/* Settings Content */}
         <div className="flex-1 min-w-0">
-          <div className="bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden">
+          <div className="bg-[#0A0D14]/90 backdrop-blur-2xl border border-white/5 rounded-3xl overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.3)]">
             
             {activeTab === "profile" && (
               <form onSubmit={handleSave}>
-                <div className="p-6 border-b border-slate-700/60">
-                  <h2 className="text-base font-semibold text-slate-100 mb-1">Public Profile</h2>
-                  <p className="text-sm text-slate-400 mb-6">This information will be displayed publicly.</p>
+                <div className="p-8 border-b border-white/5">
+                  <h2 className="text-lg font-bold text-white mb-1">Public Profile</h2>
+                  <p className="text-sm text-slate-400 mb-8 font-medium">This information will be displayed publicly.</p>
                   
-                  <div className="space-y-5 max-w-md">
+                  <div className="space-y-6 max-w-md">
                     <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1.5">Full Name</label>
+                      <label className="block text-xs font-bold tracking-wide text-slate-400 uppercase mb-2">Full Name</label>
                       <div className="relative">
-                        <User className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-500" />
+                        <User className="absolute left-4 top-3 h-5 w-5 text-slate-500" />
                         <input
                           type="text"
                           value={formData.name}
                           onChange={(e) => setFormData({...formData, name: e.target.value})}
-                          className="w-full bg-slate-900/50 border border-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-100 placeholder-slate-500 outline-none transition-all"
+                          className="w-full bg-white/5 border border-white/10 hover:border-white/20 focus:bg-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-[15px] text-white rounded-2xl pl-12 pr-4 py-3 outline-none transition-all placeholder:text-slate-600"
                         />
                       </div>
                     </div>
                     
                     <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1.5">Email Address</label>
+                      <label className="block text-xs font-bold tracking-wide text-slate-400 uppercase mb-2">Email Address</label>
                       <div className="relative">
-                        <Mail className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-500" />
+                        <Mail className="absolute left-4 top-3 h-5 w-5 text-slate-600" />
                         <input
                           type="email"
                           disabled
                           value={formData.email}
-                          className="w-full bg-slate-900/80 border border-slate-700/50 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-400 outline-none cursor-not-allowed opacity-70"
+                          className="w-full bg-black/20 border border-white/5 rounded-2xl pl-12 pr-4 py-3 text-[15px] text-slate-500 outline-none cursor-not-allowed opacity-70"
                         />
                       </div>
-                      <p className="text-xs text-slate-500 mt-1.5">Your email address is managed by your authentication provider.</p>
+                      <p className="text-[11px] text-slate-500 mt-2 font-medium">Your email address is managed by your authentication provider.</p>
                     </div>
                   </div>
                 </div>
                 
-                <div className="px-6 py-4 bg-slate-800/30 flex items-center justify-end">
+                <div className="px-8 py-5 bg-[#030509]/60 flex items-center justify-end">
                   <button
                     type="submit"
                     disabled={saving}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+                    className="relative group overflow-hidden rounded-xl disabled:opacity-60"
                   >
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                    Save Changes
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600" />
+                    <div className="absolute inset-0 bg-blue-500 blur-md opacity-0 group-hover:opacity-40 transition-opacity" />
+                    <div className="relative px-6 py-2.5 flex items-center gap-2 text-white text-sm font-bold shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] border border-blue-400/30 rounded-xl transition-transform active:scale-95">
+                      {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                      Save Changes
+                    </div>
                   </button>
                 </div>
               </form>
@@ -178,36 +183,40 @@ export default function SettingsPage() {
 
             {activeTab === "api-keys" && (
               <form onSubmit={handleSave}>
-                <div className="p-6 border-b border-slate-700/60">
-                  <h2 className="text-base font-semibold text-slate-100 mb-1">External Integrations</h2>
-                  <p className="text-sm text-slate-400 mb-6">Connect BuildIA to external platforms like GitHub.</p>
+                <div className="p-8 border-b border-white/5">
+                  <h2 className="text-lg font-bold text-white mb-1">External Integrations</h2>
+                  <p className="text-sm text-slate-400 mb-8 font-medium">Connect BuildIA to external platforms like GitHub.</p>
                   
-                  <div className="space-y-5 max-w-md">
+                  <div className="space-y-6 max-w-md">
                     <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1.5">GitHub Personal Access Token</label>
+                      <label className="block text-xs font-bold tracking-wide text-slate-400 uppercase mb-2">GitHub Personal Access Token</label>
                       <div className="relative">
-                        <Key className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-500" />
+                        <Key className="absolute left-4 top-3 h-5 w-5 text-slate-500" />
                         <input
                           type="password"
                           placeholder="ghp_xxxxxxxxxxxx"
                           value={formData.githubToken}
                           onChange={(e) => setFormData({...formData, githubToken: e.target.value})}
-                          className="w-full bg-slate-900/50 border border-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-100 placeholder-slate-500 outline-none transition-all"
+                          className="w-full bg-white/5 border border-white/10 hover:border-white/20 focus:bg-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-[15px] text-white rounded-2xl pl-12 pr-4 py-3 outline-none transition-all placeholder:text-slate-600"
                         />
                       </div>
-                      <p className="text-[10px] text-slate-500 mt-1.5">Requires &apos;repo&apos; scope to create repositories and push code.</p>
+                      <p className="text-[11px] text-slate-500 mt-2 font-medium">Requires &apos;repo&apos; scope to create repositories and push code.</p>
                     </div>
                   </div>
                 </div>
                 
-                <div className="px-6 py-4 bg-slate-800/30 flex items-center justify-end">
+                <div className="px-8 py-5 bg-[#030509]/60 flex items-center justify-end">
                   <button
                     type="submit"
                     disabled={saving}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+                    className="relative group overflow-hidden rounded-xl disabled:opacity-60"
                   >
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                    Save API Keys
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600" />
+                    <div className="absolute inset-0 bg-blue-500 blur-md opacity-0 group-hover:opacity-40 transition-opacity" />
+                    <div className="relative px-6 py-2.5 flex items-center gap-2 text-white text-sm font-bold shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] border border-blue-400/30 rounded-xl transition-transform active:scale-95">
+                      {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                      Save API Keys
+                    </div>
                   </button>
                 </div>
               </form>

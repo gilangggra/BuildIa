@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { ProjectsModule } from './projects/projects.module';
 import { ArtefactsModule } from './artefacts/artefacts.module';
 import { AiModule } from './ai/ai.module';
+import { AgentsModule } from './agents/agents.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AiModule } from './ai/ai.module';
     ProjectsModule,
     ArtefactsModule,
     AiModule,
+    AgentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

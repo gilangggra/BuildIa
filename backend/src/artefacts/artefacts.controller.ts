@@ -26,6 +26,15 @@ export class ArtefactsController {
     return this.artefactsService.generate(projectId, generateDto);
   }
 
+  @Post(':id/refactor')
+  refactor(
+    @Param('projectId') projectId: string,
+    @Param('id') id: string,
+    @Body() dto: { prompt: string },
+  ) {
+    return this.artefactsService.refactorArtefact(projectId, id, dto.prompt);
+  }
+
   @Get(':id')
   findOne(@Param('projectId') projectId: string, @Param('id') id: string) {
     return this.artefactsService.findOne(projectId, id);

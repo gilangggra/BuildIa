@@ -6,12 +6,14 @@ import {
 } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { AiService } from '../ai/ai.service';
+import { AiOrchestratorService } from '../ai/ai-orchestrator.service';
 
 @Injectable()
 export class ArtefactsService {
   constructor(
     private readonly supabaseService: SupabaseService,
     private readonly aiService: AiService,
+    private readonly aiOrchestratorService: AiOrchestratorService,
   ) {}
 
   async findAll(projectId: string) {
@@ -56,10 +58,38 @@ export class ArtefactsService {
       }
     }
 
-    // 2. Call Gemini to generate content
-    const aiResult = await this.aiService.generateArtefact(
+    // Fetch last 4 artefacts for chat history
+    let chatHistory: any[] = [];
+    try {
+      const { data: recentArtefacts } = await this.supabaseService
+        .getClient()
+        .from('artefacts')
+        .select('content, metadata, created_at')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false })
+        .limit(4);
+
+      if (recentArtefacts && recentArtefacts.length > 0) {
+        // Supabase returns newest first, we want oldest first for history
+        recentArtefacts.reverse().forEach((art: any) => {
+          if (art.metadata && art.metadata.prompt) {
+            chatHistory.push({
+              prompt: art.metadata.prompt,
+              content: art.content,
+            });
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Failed to fetch chat history', e);
+    }
+
+    // 2. Call Gemini to generate content with RAG Memory & Chat History
+    const aiResult = await this.aiOrchestratorService.generateArtefact(
       payload.agentType,
       payload.prompt,
+      projectId,
+      chatHistory
     );
 
     // 3. Save to Supabase
@@ -74,7 +104,7 @@ export class ArtefactsService {
         format: 'markdown',
         status: 'draft',
         generated_by: payload.agentType,
-        metadata: { tokens: aiResult.usage },
+        metadata: { tokens: aiResult.usage, prompt: payload.prompt, ragCitations: aiResult.ragCitations },
       })
       .select()
       .single();
@@ -83,14 +113,78 @@ export class ArtefactsService {
       console.error('ArtefactsService.generate DB Error:', error);
       throw new InternalServerErrorException(error.message);
     }
+
+    // 4. Autonomous QA Trigger (Fire and Forget)
+    if (payload.agentType === 'code-generator' || payload.type === 'code') {
+      // Intentionally not awaiting so it runs in the background
+      this.triggerAutonomousQA(projectId, data.content).catch(console.error);
+    }
+
     return data;
   }
 
+  private async triggerAutonomousQA(projectId: string, sourceCode: string) {
+    try {
+      console.log(`[Autonomous QA] Triggering tests for project ${projectId}...`);
+      const prompt = `[AUTO-QA] Generate Cypress E2E tests for the following code:\n\n${sourceCode}`;
+      
+      const aiResult = await this.aiOrchestratorService.generateArtefact(
+        'qa-tester',
+        prompt,
+        projectId
+      );
+
+      const { data, error } = await this.supabaseService
+        .getClient()
+        .from('artefacts')
+        .insert({
+          project_id: projectId,
+          type: 'test',
+          name: 'Auto-Generated Tests (Cypress)',
+          content: aiResult.text,
+          format: 'markdown',
+          status: 'draft',
+          generated_by: 'qa-tester',
+          metadata: { tokens: aiResult.usage, prompt: prompt, is_auto_generated: true },
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('[Autonomous QA] DB Error:', error);
+      } else {
+        console.log(`[Autonomous QA] Successfully generated test artefact: ${data.id}`);
+      }
+    } catch (e) {
+      console.error('[Autonomous QA] Failed to generate tests:', e);
+    }
+  }
+
   async update(projectId: string, id: string, payload: any) {
-    const { data, error } = await this.supabaseService
-      .getClient()
+    const supabase = this.supabaseService.getClient();
+    let updatePayload = { ...payload };
+
+    // RAG Memory: Save embedding when an artefact is approved
+    if (payload.status === 'approved' || payload.status === 'final') {
+      try {
+        // Fetch content to embed if not provided in payload
+        const contentToEmbed = payload.content || (await this.findOne(projectId, id)).content;
+        if (contentToEmbed) {
+          const embedding = await this.aiService.generateEmbedding(contentToEmbed);
+          if (embedding && embedding.length > 0) {
+            // Stringify as array string for Supabase vector column
+            updatePayload.embedding = `[${embedding.join(',')}]`;
+            console.log(`[RAG] Saved embedding memory for artefact ${id}`);
+          }
+        }
+      } catch (e) {
+        console.error('[RAG] Failed to save embedding memory', e);
+      }
+    }
+
+    const { data, error } = await supabase
       .from('artefacts')
-      .update(payload)
+      .update(updatePayload)
       .eq('project_id', projectId)
       .eq('id', id)
       .select()
@@ -98,5 +192,28 @@ export class ArtefactsService {
 
     if (error) throw new InternalServerErrorException(error.message);
     return data;
+  }
+
+  async refactorArtefact(projectId: string, id: string, prompt: string) {
+    // 1. Fetch existing artefact
+    const artefact = await this.findOne(projectId, id);
+
+    // 2. Build refactoring prompt
+    const fullPrompt = `[EXISTING CODE/CONTENT]:\n${artefact.content}\n\n[USER INSTRUCTION - REFACTOR/MODIFY THIS ARTEFACT]:\n${prompt}`;
+
+    // 3. Call AI with the original agent type and project context
+    const agentType = artefact.generated_by || 'code-generator';
+    const aiResult = await this.aiOrchestratorService.generateArtefact(
+      agentType,
+      fullPrompt,
+      projectId
+    );
+
+    // 4. Return as a proposal (do not overwrite DB yet)
+    return {
+      originalId: id,
+      proposedContent: aiResult.text,
+      usage: aiResult.usage,
+    };
   }
 }

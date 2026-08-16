@@ -53,20 +53,23 @@ export default function AuthForm() {
   };
 
   return (
-    <div className="w-full max-w-[400px] mx-auto">
-      <div className="bg-[#0B0F19]/80 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-2xl">
+    <div className="w-full max-w-[420px] mx-auto">
+      <div className="bg-[#0A0D14]/90 backdrop-blur-2xl border border-white/10 p-8 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden">
         
+        {/* Subtle inner glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[100px] bg-blue-500/20 blur-[60px] pointer-events-none" />
+
         {/* Toggle Tabs */}
-        <div className="flex bg-slate-900/50 p-1 rounded-xl mb-8 border border-white/5">
+        <div className="flex bg-[#030509]/80 p-1.5 rounded-2xl mb-8 border border-white/5 relative z-10">
           <button
             onClick={() => { setIsLogin(true); setErrorMsg(""); setSuccessMsg(""); }}
-            className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${isLogin ? 'bg-white/10 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
+            className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${isLogin ? 'bg-white/10 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
           >
             Sign In
           </button>
           <button
             onClick={() => { setIsLogin(false); setErrorMsg(""); setSuccessMsg(""); }}
-            className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${!isLogin ? 'bg-white/10 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
+            className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${!isLogin ? 'bg-white/10 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
           >
             Sign Up
           </button>
@@ -75,18 +78,18 @@ export default function AuthForm() {
         {/* Status Messages */}
         <AnimatePresence>
           {errorMsg && (
-            <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }} className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm flex items-start gap-2">
+            <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }} className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-start gap-2 relative z-10">
               <span>{errorMsg}</span>
             </motion.div>
           )}
           {successMsg && (
-            <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }} className="mb-6 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-400 text-sm flex items-start gap-2">
+            <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }} className="mb-6 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-sm flex items-start gap-2 relative z-10">
               <span>{successMsg}</span>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <form onSubmit={handleAuth} className="space-y-4">
+        <form onSubmit={handleAuth} className="space-y-4 relative z-10">
           <AnimatePresence mode="wait">
             {!isLogin && (
               <motion.div
@@ -98,11 +101,11 @@ export default function AuthForm() {
                 className="overflow-hidden"
               >
                 <div className="relative pb-1">
-                  <User className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+                  <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-500" />
                   <input
                     type="text"
                     placeholder="Full Name"
-                    className="w-full bg-slate-900/50 border border-slate-700/50 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm text-white rounded-xl pl-10 pr-4 py-2.5 outline-none transition-all placeholder:text-slate-500"
+                    className="w-full bg-white/5 border border-white/10 hover:border-white/20 focus:bg-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-[15px] text-white rounded-2xl pl-12 pr-4 py-3 outline-none transition-all placeholder:text-slate-600"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required={!isLogin}
@@ -113,11 +116,11 @@ export default function AuthForm() {
           </AnimatePresence>
 
           <div className="relative">
-            <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+            <Mail className="absolute left-4 top-3.5 h-5 w-5 text-slate-500" />
             <input
               type="email"
               placeholder="Email Address"
-              className="w-full bg-slate-900/50 border border-slate-700/50 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm text-white rounded-xl pl-10 pr-4 py-2.5 outline-none transition-all placeholder:text-slate-500"
+              className="w-full bg-white/5 border border-white/10 hover:border-white/20 focus:bg-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-[15px] text-white rounded-2xl pl-12 pr-4 py-3 outline-none transition-all placeholder:text-slate-600"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
@@ -125,11 +128,11 @@ export default function AuthForm() {
           </div>
 
           <div className="relative">
-            <Lock className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+            <Lock className="absolute left-4 top-3.5 h-5 w-5 text-slate-500" />
             <input
               type="password"
               placeholder="Password"
-              className="w-full bg-slate-900/50 border border-slate-700/50 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm text-white rounded-xl pl-10 pr-4 py-2.5 outline-none transition-all placeholder:text-slate-500"
+              className="w-full bg-white/5 border border-white/10 hover:border-white/20 focus:bg-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-[15px] text-white rounded-2xl pl-12 pr-4 py-3 outline-none transition-all placeholder:text-slate-600"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               required
@@ -139,28 +142,32 @@ export default function AuthForm() {
           <button 
             type="submit" 
             disabled={loading} 
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 mt-2 disabled:opacity-70 disabled:cursor-not-allowed shadow-sm"
+            className="group relative w-full overflow-hidden rounded-2xl mt-4 disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>
-                {isLogin ? 'Sign In' : 'Create Account'}
-                <ArrowRight className="h-4 w-4" />
-              </>
-            )}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600" />
+            <div className="absolute inset-0 bg-blue-500 blur-md opacity-0 group-hover:opacity-40 transition-opacity" />
+            <div className="relative w-full py-3.5 px-4 flex items-center justify-center gap-2 text-white font-bold transition-all shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] border border-blue-400/30 rounded-2xl">
+              {loading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <>
+                  {isLogin ? 'Sign In to BuildIA' : 'Create Account'}
+                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </>
+              )}
+            </div>
           </button>
         </form>
 
-        <div className="mt-6">
+        <div className="mt-8 relative z-10">
           <div className="relative flex items-center py-4">
-            <div className="flex-grow border-t border-slate-700"></div>
-            <span className="flex-shrink-0 mx-4 text-slate-500 text-xs font-medium">OR</span>
-            <div className="flex-grow border-t border-slate-700"></div>
+            <div className="flex-grow border-t border-white/10"></div>
+            <span className="flex-shrink-0 mx-4 text-slate-600 text-xs font-bold tracking-wider uppercase">OR</span>
+            <div className="flex-grow border-t border-white/10"></div>
           </div>
           
-          <button type="button" className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 rounded-xl transition-all text-sm text-slate-300 font-medium">
-            <Code className="h-4 w-4" />
+          <button type="button" className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-2xl transition-all text-[15px] text-slate-300 font-bold group">
+            <Code className="h-5 w-5 text-slate-400 group-hover:text-white transition-colors" />
             Continue with GitHub
           </button>
         </div>
