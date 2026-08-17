@@ -6,8 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft, FileText, Code2, GitBranch, Rocket,
   TestTube, Sparkles, Send, Loader2, ChevronDown,
-  Clock, CheckCircle2, FileCode2, AlertCircle, XCircle, Check, Zap, Bot, Plus, Wand2, X, Play, ArrowUp, Paperclip, LayoutDashboard, Terminal as TerminalIcon, RefreshCw, Brain, ShoppingCart, Blocks, Settings
-} from "lucide-react";
+  Clock, CheckCircle2, FileCode2, AlertCircle, XCircle, Check, Zap, Bot, Plus, Wand2, X, Play, ArrowUp, Paperclip, LayoutDashboard, Terminal as TerminalIcon, RefreshCw, Brain, ShoppingCart, Blocks, Settings, Save} from "lucide-react";
 import ReactDiffViewer from "react-diff-viewer-continued";
 import Editor from "@monaco-editor/react";
 import { api } from "@/lib/api";
@@ -84,8 +83,13 @@ export default function ProjectDetailPage() {
   const [viewMode, setViewMode] = useState<'code' | 'preview' | 'terminal'>('code');
   const [error, setError] = useState("");
   
+  // IDE State
+  const [editableContent, setEditableContent] = useState<string>("");
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [savingCode, setSavingCode] = useState(false);
+
   // WebContainer Hook
-  const { terminalRef, previewUrl, isWcReady, restartEnvironment } = useWebContainer(viewMode, activeArtefact);
+  const { terminalRef, previewUrl, isWcReady, restartEnvironment, syncCode } = useWebContainer(viewMode, activeArtefact);
 
   // Refactor State
   const [showRefactorModal, setShowRefactorModal] = useState(false);
@@ -101,6 +105,12 @@ export default function ProjectDetailPage() {
   const [creatingAgent, setCreatingAgent] = useState(false);
   const [showAgentDropdown, setShowAgentDropdown] = useState(false);
   
+  // Magic Build State
+  const [showMagicBuildModal, setShowMagicBuildModal] = useState(false);
+  const [magicBuildPrompt, setMagicBuildPrompt] = useState("");
+  const [isMagicBuilding, setIsMagicBuilding] = useState(false);
+  const [magicBuildProgress, setMagicBuildProgress] = useState<{status: string, currentPhase: number, message: string} | null>(null);
+
   // Marketplace State
   const [showMarketplaceModal, setShowMarketplaceModal] = useState(false);
   const [installingAgentId, setInstallingAgentId] = useState<string | null>(null);
@@ -161,6 +171,43 @@ export default function ProjectDetailPage() {
       supabase.removeChannel(channel);
     };
   }, [id]);
+
+  useEffect(() => {
+    if (activeArtefact) {
+      setEditableContent(activeArtefact.content || "");
+      setHasUnsavedChanges(false);
+    }
+  }, [activeArtefact]);
+
+  const handleSaveArtefact = async () => {
+    if (!activeArtefact || !hasUnsavedChanges) return;
+    setSavingCode(true);
+    try {
+      const updated = await api.artefacts.update(id as string, activeArtefact.id, { content: editableContent });
+      setArtefacts(prev => prev.map(a => a.id === updated.id ? updated : a));
+      setActiveArtefact(updated);
+      setHasUnsavedChanges(false);
+      // Sync to WC if it's code
+      if (activeArtefact.type === 'code') {
+        syncCode(editableContent);
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to save changes.");
+    } finally {
+      setSavingCode(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleSaveArtefact();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [hasUnsavedChanges, editableContent, activeArtefact]);
 
 
 
@@ -281,6 +328,21 @@ export default function ProjectDetailPage() {
 
 
 
+  const handleMagicBuild = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!magicBuildPrompt.trim() || isMagicBuilding) return;
+    try {
+      setIsMagicBuilding(true);
+      setError("");
+      await api.artefacts.magicBuild(id as string, magicBuildPrompt);
+      setShowMagicBuildModal(false);
+      setMagicBuildPrompt("");
+    } catch (err: any) {
+      setError(err.message || "Magic Build failed.");
+      setIsMagicBuilding(false);
+    }
+  };
+
   const handleStatusUpdate = async (newStatus: string) => {
     if (!activeArtefact) return;
     try {
@@ -316,48 +378,59 @@ export default function ProjectDetailPage() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#06090F] p-6 pb-24 relative overflow-hidden">
+    <div className="flex flex-col h-full bg-[#FAF9F6] p-6 pb-24 relative overflow-hidden font-sans">
       {/* Background Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full pointer-events-none"></div>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-[#181818]/10/60 blur-[100px] rounded-full pointer-events-none"></div>
 
       {/* Page Header */}
       <div className="flex items-center justify-between mb-6 relative z-10">
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push("/dashboard")}
-            className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all"
+            className="p-2 bg-white hover:bg-[#f7f3ee] border border-[#181818]/20 rounded-[8px] transition-all shadow-sm text-[#181818]/60 hover:text-[#181818]/90"
           >
-            <ArrowLeft className="h-4 w-4 text-slate-300" />
+            <ArrowLeft className="h-4 w-4" />
           </button>
           <div>
-            <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+            <h1 className="text-xl font-bold text-[#181818] tracking-tight flex items-center gap-2">
               {project?.name ?? "Project"}
               {deployUrl && (
-                <a href={deployUrl} target="_blank" rel="noreferrer" className="text-xs px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full font-medium ml-2 hover:bg-emerald-500/20 transition-colors flex items-center gap-1">
+                <a href={deployUrl} target="_blank" rel="noreferrer" className="text-xs px-2 py-0.5 bg-emerald-500/10 text-emerald-700 border border-emerald-100 rounded-full font-bold ml-2 hover:bg-emerald-100 transition-colors flex items-center gap-1 shadow-sm">
                   <GitBranch className="h-3 w-3" /> View Repo
                 </a>
               )}
               {artefacts.length > 0 && (
-                <span className="text-xs px-2 py-0.5 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 rounded-full font-medium ml-1 flex items-center gap-1">
+                <span className="text-xs px-2 py-0.5 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-full font-bold ml-1 flex items-center gap-1 shadow-sm">
                   <Zap className="h-3 w-3" /> {artefacts.reduce((sum, a) => sum + (a.metadata?.tokens?.totalTokens || 0), 0).toLocaleString()} Tokens
                 </span>
               )}
             </h1>
-            <p className="text-sm text-slate-400 mt-0.5">{project?.description}</p>
+            <p className="text-sm text-[#181818]/60 mt-0.5 font-medium">{project?.description}</p>
           </div>
         </div>
-        <button
-          onClick={handleDeploy}
-          disabled={deploying}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
-        >
-          {deploying ? <Loader2 className="h-4 w-4 animate-spin" /> : <GitBranch className="h-4 w-4" />}
-          {deploying ? "Deploying..." : "Push to GitHub"}
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowMagicBuildModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-[#f7f3ee] text-sm font-bold rounded-[8px] transition-all shadow-md hover:-translate-y-0.5 relative group"
+          >
+            <div className="absolute inset-0 bg-white/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity rounded-[8px] pointer-events-none" />
+            <Wand2 className="h-4 w-4 relative z-10" />
+            <span className="relative z-10">Magic Build</span>
+          </button>
+          
+          <button
+            onClick={handleDeploy}
+            disabled={deploying}
+            className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#f7f3ee] border border-[#181818]/20 text-[#181818]/80 text-sm font-bold rounded-[8px] transition-colors shadow-sm disabled:opacity-50"
+          >
+            {deploying ? <Loader2 className="h-4 w-4 animate-spin" /> : <GitBranch className="h-4 w-4" />}
+            {deploying ? "Deploying..." : "Push to GitHub"}
+          </button>
+        </div>
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 mb-4 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm relative z-10">
+        <div className="flex items-center gap-2 mb-4 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-[8px] text-red-400 text-sm relative z-10">
           <AlertCircle className="h-4 w-4 flex-shrink-0" />
           {error}
         </div>
@@ -365,36 +438,36 @@ export default function ProjectDetailPage() {
 
       <div className="flex gap-4 flex-1 min-h-0 relative z-10 -mx-6 px-6">
         {/* FAR LEFT: IDE Activity Bar */}
-        <div className="w-14 flex-shrink-0 flex flex-col items-center gap-6 py-4 border-r border-white/5">
-          <button className="p-2 text-white bg-blue-500/20 rounded-xl relative group">
-            <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full" />
+        <div className="w-14 flex-shrink-0 flex flex-col items-center gap-6 py-4 bg-[#f7f3ee] border border-[#181818]/20 rounded-[12px] shadow-sm">
+          <button className="p-2 text-[#181818] bg-[#181818]/10/50 rounded-[8px] relative group">
+            <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#181818] rounded-r-full" />
             <FileText className="h-5 w-5" />
           </button>
-          <button className="p-2 text-slate-500 hover:text-slate-300 transition-colors">
+          <button className="p-2 text-[#181818]/40 hover:text-[#181818]/70 transition-colors">
             <GitBranch className="h-5 w-5" />
           </button>
-          <button className="p-2 text-slate-500 hover:text-slate-300 transition-colors">
+          <button className="p-2 text-[#181818]/40 hover:text-[#181818]/70 transition-colors">
             <Blocks className="h-5 w-5" />
           </button>
-          <button className="p-2 text-slate-500 hover:text-slate-300 transition-colors mt-auto">
+          <button className="p-2 text-[#181818]/40 hover:text-[#181818]/70 transition-colors mt-auto">
             <Settings className="h-5 w-5" />
           </button>
         </div>
 
         {/* LEFT: Artefacts List (Explorer) */}
-        <div className="w-56 flex-shrink-0 flex flex-col gap-3 py-2">
-          <div className="flex items-center justify-between px-2">
-            <p className="text-xs font-semibold text-slate-400 tracking-wider">
+        <div className="w-56 flex-shrink-0 flex flex-col gap-3 py-2 bg-[#f7f3ee] border border-[#181818]/20 rounded-[12px] shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-4 pt-4 pb-2 border-b border-[#181818]/20">
+            <p className="text-xs font-bold text-[#181818]/60 tracking-wider">
               EXPLORER
             </p>
           </div>
           {artefacts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center border border-dashed border-white/10 rounded-2xl bg-white/5 mx-2">
-              <FileText className="h-5 w-5 text-slate-600 mb-2" />
-              <p className="text-[11px] text-slate-500">No artefacts yet.</p>
+            <div className="flex flex-col items-center justify-center py-10 text-center mx-4">
+              <FileText className="h-5 w-5 text-[#181818]/40 mb-2" />
+              <p className="text-[11px] text-[#181818]/60 font-medium">No artefacts yet.</p>
             </div>
           ) : (
-            <div className="space-y-0.5 overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-1 overflow-y-auto px-2 custom-scrollbar pb-2">
               {artefacts.map((art) => {
                 const Icon = typeIcon[art.type] ?? FileText;
                 const isActive = activeArtefact?.id === art.id;
@@ -402,15 +475,15 @@ export default function ProjectDetailPage() {
                   <button
                     key={art.id}
                     onClick={() => setActiveArtefact(art)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-all
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-left transition-all
                       ${isActive
-                        ? "bg-blue-500/10 text-blue-300"
-                        : "bg-transparent hover:bg-white/5 text-slate-400 hover:text-slate-200"
+                        ? "bg-[#181818]/10 text-[#181818] shadow-sm"
+                        : "bg-transparent hover:bg-[#181818]/5 text-[#181818]/70"
                       }`}
                   >
-                    <Icon className={`h-3.5 w-3.5 flex-shrink-0 transition-colors ${isActive ? "text-blue-400" : "text-slate-500"}`} />
+                    <Icon className={`h-3.5 w-3.5 flex-shrink-0 transition-colors ${isActive ? "text-[#181818]" : "text-[#181818]/40"}`} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-medium truncate">
+                      <p className="text-[13px] font-semibold truncate">
                         {art.name}
                       </p>
                     </div>
@@ -422,24 +495,24 @@ export default function ProjectDetailPage() {
         </div>
 
         {/* RIGHT: Main Panel */}
-        <div className="flex-1 flex flex-col min-w-0 pb-4 pr-4">
+        <div className="flex-1 flex flex-col min-w-0 pb-4">
           {activeArtefact ? (
-            <div className="flex-1 bg-[#0B0F19]/90 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden flex flex-col shadow-2xl relative">
+            <div className="flex-1 bg-white border border-[#181818]/20 rounded-[12px] overflow-hidden flex flex-col shadow-sm relative">
               
               {/* Fake Window Controls & Tabs */}
-              <div className="flex items-center justify-between px-4 bg-[#0A0D14] border-b border-white/5">
+              <div className="flex items-center justify-between px-4 bg-[#f7f3ee] border-b border-[#181818]/20">
                 <div className="flex items-center gap-4">
-                  <div className="flex gap-2 py-3 pr-4 border-r border-white/5">
-                    <div className="w-3 h-3 rounded-full bg-red-500 border border-red-600"></div>
-                    <div className="w-3 h-3 rounded-full bg-yellow-500 border border-yellow-600"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-500 border border-green-600"></div>
+                  <div className="flex gap-2 py-3 pr-4 border-r border-[#181818]/20">
+                    <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                    <div className="w-3 h-3 rounded-full bg-amber-400"></div>
+                    <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
                   </div>
                   
                   {/* Tabs */}
-                  <div className="flex">
+                  <div className="flex pt-1">
                     <button 
                       onClick={() => setViewMode('code')}
-                      className={`px-4 py-2.5 text-xs font-medium flex items-center gap-2 border-t-2 ${viewMode === 'code' ? 'text-blue-400 border-blue-500 bg-[#0B0F19]' : 'text-slate-500 border-transparent hover:text-slate-300'}`}
+                      className={`px-4 py-2 text-xs font-bold flex items-center gap-2 border-b-2 transition-colors ${viewMode === 'code' ? 'text-[#181818] border-blue-600 bg-white' : 'text-[#181818]/60 border-transparent hover:text-[#181818]/80 hover:bg-[#181818]/5 rounded-t-lg'}`}
                     >
                       <FileCode2 className="h-3.5 w-3.5" /> 
                       {activeArtefact?.name || "Code"}
@@ -447,14 +520,14 @@ export default function ProjectDetailPage() {
                     {(activeArtefact.type === 'code' || activeArtefact.type === 'diagram') && (
                       <button 
                         onClick={() => setViewMode('preview')}
-                        className={`px-4 py-2.5 text-xs font-medium flex items-center gap-2 border-t-2 ${viewMode === 'preview' ? 'text-blue-400 border-blue-500 bg-[#0B0F19]' : 'text-slate-500 border-transparent hover:text-slate-300'}`}
+                        className={`px-4 py-2 text-xs font-bold flex items-center gap-2 border-b-2 transition-colors ${viewMode === 'preview' ? 'text-[#181818] border-blue-600 bg-white' : 'text-[#181818]/60 border-transparent hover:text-[#181818]/80 hover:bg-[#181818]/5 rounded-t-lg'}`}
                       >
                         <Play className="h-3.5 w-3.5" /> Preview
                       </button>
                     )}
                     <button 
                       onClick={() => setViewMode('terminal')}
-                      className={`px-4 py-2.5 text-xs font-medium flex items-center gap-2 border-t-2 ${viewMode === 'terminal' ? 'text-blue-400 border-blue-500 bg-[#0B0F19]' : 'text-slate-500 border-transparent hover:text-slate-300'}`}
+                      className={`px-4 py-2 text-xs font-bold flex items-center gap-2 border-b-2 transition-colors ${viewMode === 'terminal' ? 'text-[#181818] border-blue-600 bg-white' : 'text-[#181818]/60 border-transparent hover:text-[#181818]/80 hover:bg-[#181818]/5 rounded-t-lg'}`}
                     >
                       <TerminalIcon className="h-3.5 w-3.5" /> Terminal
                     </button>
@@ -462,30 +535,41 @@ export default function ProjectDetailPage() {
                 </div>
 
                 <div className="flex items-center gap-3">
+                  {hasUnsavedChanges && (
+                    <button 
+                      onClick={handleSaveArtefact}
+                      disabled={savingCode}
+                      className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-sm"
+                    >
+                      {savingCode ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} 
+                      Save (Ctrl+S)
+                    </button>
+                  )}
+
                   <button 
                     onClick={restartEnvironment}
-                    className="px-2.5 py-1.5 hover:bg-white/5 text-slate-400 hover:text-white rounded-lg transition-colors flex items-center gap-1.5"
+                    className="px-2.5 py-1.5 hover:bg-slate-200 text-[#181818]/60 hover:text-[#181818]/90 rounded-lg transition-colors flex items-center gap-1.5"
                     title="Restart Terminal & Dev Server"
                   >
                     <RefreshCw className="h-4 w-4" />
                   </button>
 
-                  <button onClick={() => setShowRefactorModal(true)} className="px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 hover:border-blue-500/40 text-blue-400 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5">
+                  <button onClick={() => setShowRefactorModal(true)} className="px-3 py-1.5 bg-[#181818]/5 hover:bg-[#181818]/10 border border-[#181818]/30 text-[#181818] rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm">
                     <Wand2 className="h-3.5 w-3.5" /> AI Refactor
                   </button>
 
                   {activeArtefact.status !== 'approved' && activeArtefact.status !== 'final' && (
-                    <div className="flex items-center gap-1.5 ml-2 border-l border-white/10 pl-3">
+                    <div className="flex items-center gap-1.5 ml-2 border-l border-[#181818]/20 pl-3">
                       <button 
                         onClick={() => handleStatusUpdate('rejected')}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 hover:border-red-500/30 rounded-lg text-xs font-medium transition-all"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-lg text-xs font-bold transition-all shadow-sm"
                         title="Request Changes"
                       >
                         <XCircle className="h-3.5 w-3.5" /> Reject
                       </button>
                       <button 
                         onClick={() => handleStatusUpdate('approved')}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/30 rounded-lg text-xs font-medium transition-all"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-500/10 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-bold transition-all shadow-sm"
                         title="Approve for next phase"
                       >
                         <Check className="h-3.5 w-3.5" /> Approve
@@ -496,18 +580,22 @@ export default function ProjectDetailPage() {
               </div>
 
               {/* Editor / Preview Body */}
-              <div className="flex-1 relative overflow-hidden bg-[#0A0D14]">
+              <div className="flex-1 relative overflow-hidden bg-white">
                 <div className={`absolute inset-0 ${viewMode === 'code' ? 'block' : 'hidden'}`}>
                   <Editor
                     height="100%"
                     language={activeArtefact.type === 'code' ? 'javascript' : activeArtefact.type === 'srs' ? 'markdown' : 'json'}
                     theme="vs-dark"
-                    value={activeArtefact.content}
-                    options={{ readOnly: true, minimap: { enabled: false }, padding: { top: 16 } }}
+                    value={editableContent}
+                    onChange={(val) => {
+                      setEditableContent(val || "");
+                      setHasUnsavedChanges(true);
+                    }}
+                    options={{ readOnly: false, minimap: { enabled: false }, padding: { top: 16 } }}
                   />
                 </div>
                 
-                <div className={`absolute inset-0 bg-[#0A0D14] ${viewMode === 'terminal' ? 'block' : 'hidden'}`}>
+                <div className={`absolute inset-0 bg-slate-900 ${viewMode === 'terminal' ? 'block' : 'hidden'}`}>
                   <div ref={terminalRef} className="w-full h-full p-4" />
                 </div>
                 
@@ -520,23 +608,23 @@ export default function ProjectDetailPage() {
                       allow="cross-origin-isolated"
                     />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-[#0B0F19] text-slate-400">
-                       <Loader2 className="h-8 w-8 animate-spin mb-4 text-blue-500" />
-                       <p className="font-medium text-white">Booting Environment...</p>
-                       <p className="text-sm mt-2">Open the Terminal tab to view logs.</p>
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-[#f7f3ee] text-[#181818]/60">
+                       <Loader2 className="h-8 w-8 animate-spin mb-4 text-[#181818]" />
+                       <p className="font-bold text-[#181818]/90">Booting Environment...</p>
+                       <p className="text-sm mt-2 font-medium">Open the Terminal tab to view logs.</p>
                     </div>
                   )}
                 </div>
               </div>
             </div>
           ) : (
-            <div className="flex-1 bg-[#0B0F19]/40 border border-dashed border-white/5 rounded-2xl flex items-center justify-center shadow-inner">
-              <div className="text-center opacity-70">
-                <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/10">
-                  <LayoutDashboard className="h-8 w-8 text-slate-500" />
+            <div className="flex-1 bg-white border border-[#181818]/20 rounded-[12px] flex items-center justify-center shadow-sm">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-[#f7f3ee] border border-[#181818]/10 rounded-[12px] flex items-center justify-center mx-auto mb-4">
+                  <LayoutDashboard className="h-8 w-8 text-[#181818]/40" />
                 </div>
-                <p className="font-medium text-slate-400">Select an artefact to view it</p>
-                <p className="text-xs text-slate-500 mt-1">Or generate a new one using the AI agent panel below.</p>
+                <p className="font-bold text-[#181818]/80">Select an artefact to view it</p>
+                <p className="text-sm text-[#181818]/60 mt-1 font-medium">Or generate a new one using the AI agent panel below.</p>
               </div>
             </div>
           )}
@@ -545,32 +633,32 @@ export default function ProjectDetailPage() {
 
       {/* Floating Pill Command Bar (Kapsul Melayang) */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-3xl z-40">
-        <form onSubmit={handleGenerate} className="bg-[#0B0F19]/80 backdrop-blur-2xl rounded-full p-2 flex items-center shadow-[0_0_40px_rgba(0,0,0,0.5)] border border-white/10">
+        <form onSubmit={handleGenerate} className="bg-white/90 backdrop-blur-2xl rounded-full p-2 flex items-center shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-[#181818]/20">
           
           {/* Subtle glowing orb inside the pill */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-full bg-blue-500/10 blur-[30px] rounded-full pointer-events-none"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-full bg-[#181818]/10 blur-[30px] rounded-full pointer-events-none"></div>
           
           {/* Agent Selector Dropup */}
           <div className="relative">
             <button
               type="button"
               onClick={() => setShowAgentDropdown(!showAgentDropdown)}
-              className="flex items-center gap-2 pl-4 pr-3 py-2.5 rounded-full hover:bg-white/5 border-r border-white/10 transition-colors relative z-10"
+              className="flex items-center gap-2 pl-4 pr-3 py-2.5 rounded-full hover:bg-[#181818]/5 border-r border-[#181818]/20 transition-colors relative z-10"
             >
-              <div className="w-7 h-7 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
+              <div className="w-7 h-7 rounded-full bg-[#181818]/5 border border-[#181818]/20 flex items-center justify-center text-[#181818]">
                 {selectedAgent && (() => {
                   const Icon = ICON_MAP[selectedAgent.icon_name] || Bot;
                   return <Icon className="h-4 w-4" />;
                 })()}
               </div>
               <span className="text-sm text-slate-200 font-medium whitespace-nowrap">{selectedAgent?.label || "Agent"}</span>
-              <ChevronDown className={`h-4 w-4 text-slate-500 transition-transform ${showAgentDropdown ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`h-4 w-4 text-[#181818]/60 transition-transform ${showAgentDropdown ? 'rotate-180' : ''}`} />
             </button>
 
             {showAgentDropdown && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowAgentDropdown(false)} />
-                <div className="absolute bottom-full left-0 mb-3 w-56 bg-[#0B0F19] border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
+                <div className="absolute bottom-full left-0 mb-3 w-56 bg-white border border-[#181818]/20 rounded-[12px] shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
                   <div className="p-1.5 flex flex-col gap-0.5">
                     {agents.map((agent) => {
                       const Icon = ICON_MAP[agent.icon_name] || Bot;
@@ -583,14 +671,14 @@ export default function ProjectDetailPage() {
                             setSelectedAgent(agent);
                             setShowAgentDropdown(false);
                           }}
-                          className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-colors ${
-                            isSelected ? "bg-blue-500/10 text-blue-400" : "hover:bg-white/5 text-slate-400 hover:text-slate-200"
+                          className={`flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-left transition-colors ${
+                            isSelected ? "bg-[#181818]/5 text-[#181818]" : "hover:bg-[#f7f3ee] text-[#181818]/70 hover:text-[#181818]"
                           }`}
                         >
                           <Icon className="h-4 w-4" />
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs font-semibold truncate">{agent.label}</p>
-                            <p className="text-[9px] truncate opacity-50">{agent.description}</p>
+                            <p className="text-xs font-bold truncate">{agent.label}</p>
+                            <p className="text-[9px] font-medium truncate text-[#181818]/40">{agent.description}</p>
                           </div>
                         </button>
                       );
@@ -603,10 +691,10 @@ export default function ProjectDetailPage() {
           
           {/* Add Agent Button next to the picker */}
           <div className="flex gap-1 ml-1 mr-2 relative z-10">
-            <button type="button" onClick={() => setShowMarketplaceModal(true)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-purple-400 hover:text-purple-300 transition-colors" title="Agent Marketplace">
+            <button type="button" onClick={() => setShowMarketplaceModal(true)} className="p-2 hover:bg-[#181818]/5 rounded-full text-[#181818] transition-colors" title="Agent Marketplace">
               <ShoppingCart className="h-4 w-4" />
             </button>
-            <button type="button" onClick={() => setShowAgentModal(true)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-slate-400 hover:text-white transition-colors" title="Create Custom Agent">
+            <button type="button" onClick={() => setShowAgentModal(true)} className="p-2 hover:bg-[#181818]/5 rounded-full text-[#181818]/40 hover:text-[#181818]/70 transition-colors" title="Create Custom Agent">
               <Plus className="h-4 w-4" />
             </button>
           </div>
@@ -618,18 +706,18 @@ export default function ProjectDetailPage() {
             onChange={e => setPrompt(e.target.value)}
             placeholder={`Tell the ${selectedAgent?.label || 'agent'} what to do...`}
             disabled={generating}
-            className="flex-1 bg-transparent border-none focus:ring-0 text-white text-sm px-3 placeholder:text-slate-500 outline-none disabled:opacity-50 relative z-10"
+            className="flex-1 bg-transparent border-none focus:ring-0 text-[#181818] font-medium text-sm px-3 placeholder:text-[#181818]/40 outline-none disabled:opacity-50 relative z-10"
           />
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2 pr-2 relative z-10">
-            <button type="button" className="p-2 rounded-full text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors">
+            <button type="button" className="p-2 rounded-full text-[#181818]/40 hover:text-[#181818]/70 hover:bg-[#181818]/5 transition-colors">
               <Paperclip className="h-5 w-5" />
             </button>
             <button
               type="submit"
               disabled={generating || !prompt.trim()}
-              className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-500 transition-all active:scale-95 shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:active:scale-100"
+              className="w-10 h-10 rounded-full bg-[#181818] text-[#f7f3ee] flex items-center justify-center hover:bg-[#2a2a2a] transition-all active:scale-95 shadow-md shadow-blue-500/20 disabled:opacity-50 disabled:active:scale-100"
             >
               {generating ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowUp className="h-5 w-5" />}
             </button>
@@ -639,17 +727,17 @@ export default function ProjectDetailPage() {
 
       {/* Refactor Prompt Modal */}
       {showRefactorModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0B0F19] border border-white/10 rounded-2xl w-full max-w-lg shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
-            <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-[#181818]/20 rounded-[12px] w-full max-w-lg shadow-[0_8px_30px_rgba(24,24,24,0.06)] overflow-hidden">
+            <div className="px-6 py-5 border-b border-[#181818]/10 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                  <Wand2 className="h-5 w-5 text-blue-400" /> Refactor with AI
+                <h2 className="text-lg font-bold text-[#181818] flex items-center gap-2">
+                  <Wand2 className="h-5 w-5 text-[#181818]" /> Refactor with AI
                 </h2>
-                <p className="text-xs text-slate-400 mt-1">Tell the AI how to modify this artefact.</p>
+                <p className="text-xs text-[#181818]/60 mt-1 font-medium">Tell the AI how to modify this artefact.</p>
               </div>
-              <button onClick={() => setShowRefactorModal(false)} className="p-1.5 hover:bg-white/5 rounded-lg transition-colors">
-                <X className="h-5 w-5 text-slate-400" />
+              <button onClick={() => setShowRefactorModal(false)} className="p-1.5 hover:bg-[#181818]/5 rounded-lg transition-colors">
+                <X className="h-5 w-5 text-[#181818]/40" />
               </button>
             </div>
             <form onSubmit={handleRefactorRequest} className="p-6 space-y-5">
@@ -658,13 +746,13 @@ export default function ProjectDetailPage() {
                 value={refactorPrompt}
                 onChange={e => setRefactorPrompt(e.target.value)}
                 placeholder="e.g. Can you convert this to use Tailwind CSS?"
-                className="w-full bg-[#121825] border border-white/10 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 outline-none transition-all resize-none"
+                className="w-full bg-[#f7f3ee] border border-[#181818]/20 focus:bg-white focus:border-[#181818] focus:ring-1 focus:ring-[#181818] rounded-[8px] px-4 py-3 text-sm text-[#181818] placeholder-slate-400 font-medium outline-none transition-all resize-none"
               />
               <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={() => setShowRefactorModal(false)} className="px-4 py-2 hover:bg-white/5 text-slate-300 text-sm font-medium rounded-xl transition-colors">
+                <button type="button" onClick={() => setShowRefactorModal(false)} className="px-4 py-2 hover:bg-[#181818]/5 text-[#181818]/70 text-sm font-bold rounded-[8px] transition-colors">
                   Cancel
                 </button>
-                <button type="submit" disabled={isRefactoring || !refactorPrompt.trim()} className="flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white text-sm font-medium rounded-xl transition-colors shadow-sm">
+                <button type="submit" disabled={isRefactoring || !refactorPrompt.trim()} className="flex items-center gap-2 px-5 py-2 bg-[#181818] hover:bg-[#2a2a2a] disabled:opacity-60 text-[#f7f3ee] text-sm font-bold rounded-[8px] transition-colors shadow-sm">
                   {isRefactoring ? <Loader2 className="h-4 w-4 animate-spin" /> : "Start Refactoring"}
                 </button>
               </div>
@@ -675,27 +763,27 @@ export default function ProjectDetailPage() {
 
       {/* Diff Viewer Modal */}
       {diffProposal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-6">
-          <div className="bg-[#0B0F19] border border-white/10 rounded-2xl w-full h-full max-h-[90vh] shadow-2xl overflow-hidden flex flex-col">
-            <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-[#06090F]/50">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                <GitBranch className="h-5 w-5 text-blue-400" /> Review Changes
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-6">
+          <div className="bg-white border border-[#181818]/20 rounded-[12px] w-full h-full max-h-[90vh] shadow-[0_8px_30px_rgba(24,24,24,0.06)] overflow-hidden flex flex-col">
+            <div className="px-6 py-4 border-b border-[#181818]/10 flex items-center justify-between bg-[#f7f3ee]">
+              <h2 className="text-lg font-bold text-[#181818] flex items-center gap-2">
+                <GitBranch className="h-5 w-5 text-[#181818]" /> Review Changes
               </h2>
               <div className="flex items-center gap-3">
-                <button onClick={() => setDiffProposal(null)} className="px-4 py-2 border border-white/10 hover:bg-white/5 text-slate-300 text-sm font-medium rounded-xl transition-colors">
+                <button onClick={() => setDiffProposal(null)} className="px-4 py-2 border border-[#181818]/20 hover:bg-[#181818]/5 text-[#181818]/70 text-sm font-bold rounded-[8px] transition-colors">
                   Reject
                 </button>
-                <button onClick={handleAcceptRefactor} className="flex items-center gap-2 px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-xl transition-colors shadow-lg shadow-emerald-600/20">
+                <button onClick={handleAcceptRefactor} className="flex items-center gap-2 px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-[#f7f3ee] text-sm font-bold rounded-[8px] transition-colors shadow-md shadow-emerald-600/20">
                   <Check className="h-4 w-4" /> Accept Changes
                 </button>
               </div>
             </div>
             <div className="flex-1 overflow-auto bg-[#1e1e1e] relative">
               {isRefining && (
-                <div className="absolute inset-0 z-10 bg-[#1e1e1e]/60 backdrop-blur-sm flex flex-col items-center justify-center text-white">
-                  <Loader2 className="h-10 w-10 animate-spin text-blue-500 mb-4" />
+                <div className="absolute inset-0 z-10 bg-[#1e1e1e]/60 backdrop-blur-sm flex flex-col items-center justify-center text-[#f7f3ee]">
+                  <Loader2 className="h-10 w-10 animate-spin text-[#181818]/80 mb-4" />
                   <p className="font-semibold text-lg text-slate-200">Refining changes...</p>
-                  <p className="text-sm text-slate-400 mt-2">Applying your feedback to the code.</p>
+                  <p className="text-sm text-[#181818]/40 mt-2">Applying your feedback to the code.</p>
                 </div>
               )}
               <ReactDiffViewer
@@ -710,7 +798,7 @@ export default function ProjectDetailPage() {
                 }}
               />
             </div>
-            <div className="px-6 py-4 border-t border-white/5 bg-[#0B0F19] flex flex-col gap-4">
+            <div className="px-6 py-4 border-t border-[#181818]/20 bg-[#f7f3ee] flex flex-col gap-4">
               <form onSubmit={handleRefineRequest} className="flex gap-3">
                 <input
                   type="text"
@@ -718,24 +806,24 @@ export default function ProjectDetailPage() {
                   onChange={e => setRefinePrompt(e.target.value)}
                   placeholder="Not quite right? Ask the AI to refine this code... (e.g., 'Make the button blue')"
                   disabled={isRefining}
-                  className="flex-1 bg-[#121825] border border-white/10 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition-all disabled:opacity-50"
+                  className="flex-1 bg-white border border-[#181818]/20 focus:border-[#181818] focus:ring-1 focus:ring-[#181818] rounded-[8px] px-4 py-2.5 text-sm font-medium text-[#181818] placeholder-slate-400 outline-none transition-all disabled:opacity-50"
                 />
                 <button 
                   type="submit" 
                   disabled={isRefining || !refinePrompt.trim()} 
-                  className="flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-medium rounded-xl transition-colors min-w-[120px] shadow-sm shadow-blue-900/20"
+                  className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#181818] hover:bg-[#2a2a2a] disabled:opacity-50 text-[#f7f3ee] text-sm font-bold rounded-[8px] transition-colors min-w-[120px] shadow-sm shadow-blue-900/20"
                 >
                   {isRefining ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Sparkles className="h-4 w-4" /> Refine</>}
                 </button>
               </form>
               
               <div className="flex justify-between items-center">
-                <p className="text-xs text-slate-500">You can iteratively refine this proposal or accept/reject it.</p>
+                <p className="text-xs font-medium text-[#181818]/60">You can iteratively refine this proposal or accept/reject it.</p>
                 {diffProposal.usage && (
-                  <div className="flex items-center gap-4 text-xs font-medium text-slate-400">
-                    <span className="flex items-center gap-1" title="Prompt Tokens"><ArrowUp className="h-3 w-3 text-emerald-400" /> {diffProposal.usage.promptTokens}</span>
-                    <span className="flex items-center gap-1" title="Completion Tokens"><ArrowLeft className="h-3 w-3 text-blue-400" /> {diffProposal.usage.completionTokens}</span>
-                    <span className="flex items-center gap-1"><Zap className="h-3 w-3 text-yellow-500" /> {diffProposal.usage.totalTokens} Total</span>
+                  <div className="flex items-center gap-4 text-xs font-bold text-[#181818]/40">
+                    <span className="flex items-center gap-1" title="Prompt Tokens"><ArrowUp className="h-3 w-3 text-emerald-500" /> {diffProposal.usage.promptTokens}</span>
+                    <span className="flex items-center gap-1" title="Completion Tokens"><ArrowLeft className="h-3 w-3 text-[#181818]/80" /> {diffProposal.usage.completionTokens}</span>
+                    <span className="flex items-center gap-1"><Zap className="h-3 w-3 text-amber-500" /> {diffProposal.usage.totalTokens} Total</span>
                   </div>
                 )}
               </div>
@@ -746,54 +834,54 @@ export default function ProjectDetailPage() {
 
       {/* Create Custom Agent Modal */}
       {showAgentModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0B0F19] border border-white/10 rounded-2xl w-full max-w-md shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
-            <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-[#181818]/20 rounded-[12px] w-full max-w-md shadow-[0_8px_30px_rgba(24,24,24,0.06)] overflow-hidden">
+            <div className="px-6 py-5 border-b border-[#181818]/10 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                  <Bot className="h-5 w-5 text-blue-400" /> New Agent
+                <h2 className="text-lg font-bold text-[#181818] flex items-center gap-2">
+                  <Bot className="h-5 w-5 text-[#181818]" /> New Agent
                 </h2>
-                <p className="text-xs text-slate-400 mt-1">Create a specialized AI agent.</p>
+                <p className="text-xs text-[#181818]/60 mt-1 font-medium">Create a specialized AI agent.</p>
               </div>
-              <button onClick={() => setShowAgentModal(false)} className="p-1.5 hover:bg-white/5 rounded-lg transition-colors">
-                <XCircle className="h-5 w-5 text-slate-400" />
+              <button onClick={() => setShowAgentModal(false)} className="p-1.5 hover:bg-[#181818]/5 rounded-lg transition-colors">
+                <XCircle className="h-5 w-5 text-[#181818]/40" />
               </button>
             </div>
             <form onSubmit={handleCreateAgent} className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1.5">Agent Name</label>
+                <label className="block text-xs font-bold text-[#181818]/80 mb-1.5">Agent Name</label>
                 <input
                   type="text"
                   required
                   value={newAgent.label}
                   onChange={e => setNewAgent({ ...newAgent, label: e.target.value })}
                   placeholder="e.g., Code Architect"
-                  className="w-full bg-[#121825] border border-white/10 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 outline-none transition-all"
+                  className="w-full bg-[#f7f3ee] border border-[#181818]/20 focus:bg-white focus:border-[#181818] focus:ring-1 focus:ring-[#181818] rounded-[8px] px-4 py-2.5 text-sm font-medium text-[#181818] placeholder-slate-400 outline-none transition-all"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1.5">Description</label>
+                <label className="block text-xs font-bold text-[#181818]/80 mb-1.5">Description</label>
                 <input
                   type="text"
                   value={newAgent.description}
                   onChange={e => setNewAgent({ ...newAgent, description: e.target.value })}
                   placeholder="Short description of capabilities"
-                  className="w-full bg-[#121825] border border-white/10 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 outline-none transition-all"
+                  className="w-full bg-[#f7f3ee] border border-[#181818]/20 focus:bg-white focus:border-[#181818] focus:ring-1 focus:ring-[#181818] rounded-[8px] px-4 py-2.5 text-sm font-medium text-[#181818] placeholder-slate-400 outline-none transition-all"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1.5">System Prompt</label>
+                <label className="block text-xs font-bold text-[#181818]/80 mb-1.5">System Prompt</label>
                 <textarea
                   required
                   rows={4}
                   value={newAgent.system_prompt}
                   onChange={e => setNewAgent({ ...newAgent, system_prompt: e.target.value })}
                   placeholder="You are an expert software engineer..."
-                  className="w-full bg-[#121825] border border-white/10 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 outline-none transition-all resize-none"
+                  className="w-full bg-[#f7f3ee] border border-[#181818]/20 focus:bg-white focus:border-[#181818] focus:ring-1 focus:ring-[#181818] rounded-[8px] px-4 py-3 text-sm font-medium text-[#181818] placeholder-slate-400 outline-none transition-all resize-none"
                 />
               </div>
               <div className="pt-2">
-                <button type="submit" disabled={creatingAgent || !newAgent.label.trim() || !newAgent.system_prompt.trim()} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white text-sm font-medium rounded-xl transition-colors shadow-sm">
+                <button type="submit" disabled={creatingAgent || !newAgent.label.trim() || !newAgent.system_prompt.trim()} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#181818] hover:bg-[#2a2a2a] disabled:opacity-60 text-[#f7f3ee] text-sm font-bold rounded-[8px] transition-colors shadow-sm">
                   {creatingAgent ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create Agent"}
                 </button>
               </div>
@@ -804,45 +892,45 @@ export default function ProjectDetailPage() {
 
       {/* Marketplace Modal */}
       {showMarketplaceModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0B0F19] border border-white/10 rounded-2xl w-full max-w-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[80vh]">
-            <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between bg-[#06090F]/50">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-[#181818]/20 rounded-[12px] w-full max-w-2xl shadow-[0_8px_30px_rgba(24,24,24,0.06)] overflow-hidden flex flex-col max-h-[80vh]">
+            <div className="px-6 py-5 border-b border-[#181818]/10 flex items-center justify-between bg-[#f7f3ee]">
               <div>
-                <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                  <ShoppingCart className="h-5 w-5 text-purple-400" /> Agent Marketplace
+                <h2 className="text-lg font-bold text-[#181818] flex items-center gap-2">
+                  <ShoppingCart className="h-5 w-5 text-[#181818]" /> Agent Marketplace
                 </h2>
-                <p className="text-xs text-slate-400 mt-1">Discover and install specialized AI agents created by the community.</p>
+                <p className="text-xs text-[#181818]/60 mt-1 font-medium">Discover and install specialized AI agents created by the community.</p>
               </div>
-              <button onClick={() => setShowMarketplaceModal(false)} className="p-1.5 hover:bg-white/5 rounded-lg transition-colors">
-                <XCircle className="h-5 w-5 text-slate-400" />
+              <button onClick={() => setShowMarketplaceModal(false)} className="p-1.5 hover:bg-slate-200 rounded-lg transition-colors">
+                <XCircle className="h-5 w-5 text-[#181818]/60" />
               </button>
             </div>
-            <div className="p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4 bg-[#0B0F19]">
+            <div className="p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4 bg-white">
               {PRE_MADE_AGENTS.map((agent, i) => {
                 const Icon = ICON_MAP[agent.icon_name] || Bot;
                 // check if already installed by label
                 const isInstalled = agents.some(a => a.label === agent.label);
                 return (
-                  <div key={i} className="bg-[#121825] border border-white/5 rounded-xl p-4 flex flex-col transition-all hover:border-purple-500/30 hover:bg-[#151b2a]">
+                  <div key={i} className="bg-white border border-[#181818]/20 rounded-[8px] p-4 flex flex-col transition-all hover:border-blue-300 hover:shadow-md">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20">
+                        <div className="w-10 h-10 rounded-[8px] bg-[#181818]/5 flex items-center justify-center text-[#181818] border border-[#181818]/20">
                           <Icon className="h-5 w-5" />
                         </div>
                         <div>
-                          <h3 className="text-sm font-semibold text-white">{agent.label}</h3>
-                          <p className="text-xs text-slate-400 capitalize">{agent.type} agent</p>
+                          <h3 className="text-sm font-bold text-[#181818]">{agent.label}</h3>
+                          <p className="text-xs text-[#181818]/60 font-medium capitalize">{agent.type} agent</p>
                         </div>
                       </div>
                     </div>
-                    <p className="text-xs text-slate-300 mb-5 flex-1 leading-relaxed">{agent.description}</p>
+                    <p className="text-xs text-[#181818]/70 mb-5 flex-1 font-medium leading-relaxed">{agent.description}</p>
                     <button 
                       onClick={() => handleInstallAgent(agent)}
                       disabled={isInstalled || installingAgentId === agent.label}
-                      className={`w-full py-2.5 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                      className={`w-full py-2.5 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 ${
                         isInstalled 
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 cursor-not-allowed' 
-                          : 'bg-purple-600 hover:bg-purple-500 text-white shadow-sm hover:shadow-purple-900/50'
+                          ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-200 cursor-not-allowed' 
+                          : 'bg-[#181818] hover:bg-[#2a2a2a] text-[#f7f3ee] shadow-sm hover:shadow-blue-900/20'
                       }`}
                     >
                       {installingAgentId === agent.label ? <Loader2 className="h-4 w-4 animate-spin" /> : (
@@ -853,6 +941,72 @@ export default function ProjectDetailPage() {
                 );
               })}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Magic Build Modal */}
+      {showMagicBuildModal && (
+        <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-[#181818]/20 rounded-[12px] w-full max-w-lg shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden relative">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[100px] bg-[#181818]/10 blur-[60px] pointer-events-none" />
+            <div className="px-6 py-5 border-b border-[#181818]/10 flex items-center justify-between relative z-10 bg-[#f7f3ee]/50">
+              <div>
+                <h2 className="text-lg font-bold text-[#181818] flex items-center gap-2">
+                  <Wand2 className="h-5 w-5 text-[#181818]" /> Magic Build
+                </h2>
+                <p className="text-xs text-[#181818]/60 mt-1 font-medium">AI will automatically plan, architect, and code your app.</p>
+              </div>
+              <button onClick={() => setShowMagicBuildModal(false)} className="p-1.5 hover:bg-slate-200 rounded-lg transition-colors">
+                <X className="h-5 w-5 text-[#181818]/40" />
+              </button>
+            </div>
+            <form onSubmit={handleMagicBuild} className="p-6 space-y-5 relative z-10">
+              <textarea
+                rows={4}
+                value={magicBuildPrompt}
+                onChange={e => setMagicBuildPrompt(e.target.value)}
+                placeholder="Describe your app. E.g., 'A simple calculator app with a modern light theme and history log.'"
+                className="w-full bg-[#f7f3ee] border border-[#181818]/20 focus:border-[#181818] focus:ring-1 focus:ring-[#181818] rounded-[8px] px-4 py-3 text-sm font-medium text-[#181818] placeholder-slate-400 outline-none transition-all resize-none"
+              />
+              
+              {magicBuildProgress && (
+                <div className="p-4 bg-[#181818]/5 border border-[#181818]/20 rounded-[8px]">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-bold text-blue-900">Pipeline Progress</span>
+                    <span className="text-xs font-bold text-[#181818]">{magicBuildProgress.currentPhase} / 4</span>
+                  </div>
+                  <div className="w-full bg-[#181818]/10 h-2 rounded-full overflow-hidden">
+                    <div 
+                      className="bg-[#181818] h-full transition-all duration-500 ease-out"
+                      style={{ width: `${(magicBuildProgress.currentPhase / 4) * 100}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-[#181818] mt-2 font-medium flex items-center gap-2">
+                    {magicBuildProgress.status === 'running' ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+                    {magicBuildProgress.message}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-3 pt-2 border-t border-[#181818]/10 mt-4">
+                <button 
+                  type="button" 
+                  onClick={() => setShowMagicBuildModal(false)} 
+                  className="px-4 py-2 hover:bg-[#181818]/5 text-[#181818]/70 text-sm font-bold rounded-[8px] transition-colors"
+                >
+                  Close
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={magicBuildProgress?.status === 'running' || !magicBuildPrompt.trim()} 
+                  className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-[#181818] to-[#2a2a2a] hover:from-[#2a2a2a] hover:to-[#3a3a3a] disabled:opacity-60 text-[#f7f3ee] text-sm font-bold rounded-[8px] transition-all shadow-md"
+                >
+                  {magicBuildProgress?.status === 'running' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+                  {magicBuildProgress?.status === 'running' ? "Building..." : "Start Magic Build"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

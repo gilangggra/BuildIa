@@ -216,4 +216,39 @@ export class ArtefactsService {
       usage: aiResult.usage,
     };
   }
+
+  async magicBuild(projectId: string, prompt: string) {
+    // Fire and forget so we don't block the request
+    this.runMagicBuildPipeline(projectId, prompt).catch(console.error);
+    return { status: 'started', message: 'Magic Build pipeline started in background' };
+  }
+
+  private async runMagicBuildPipeline(projectId: string, userPrompt: string) {
+    try {
+      console.log(`[Magic Build] Started for project ${projectId}`);
+      
+      // Step 1: Ideator (SRS)
+      console.log(`[Magic Build] Step 1: Ideator`);
+      const srsPayload = { type: 'srs', agentType: 'ideator', prompt: userPrompt };
+      const srsArtefact = await this.generate(projectId, srsPayload);
+      await this.update(projectId, srsArtefact.id, { status: 'approved' }); // Auto-approve for the pipeline
+
+      // Step 2: Diagrammer
+      console.log(`[Magic Build] Step 2: Diagrammer`);
+      const diagramPrompt = `Based on the SRS we just created for "${userPrompt}", create a system architecture diagram.`;
+      const diagramPayload = { type: 'diagram', agentType: 'diagrammer', prompt: diagramPrompt };
+      const diagramArtefact = await this.generate(projectId, diagramPayload);
+      await this.update(projectId, diagramArtefact.id, { status: 'approved' });
+
+      // Step 3: Coder
+      console.log(`[Magic Build] Step 3: Coder`);
+      const codePrompt = `Based on the SRS and Architecture diagram we just created for "${userPrompt}", write the full source code for the main application entry point (e.g., App.jsx or similar) that satisfies the requirements. Use Tailwind CSS if styling is needed.`;
+      const codePayload = { type: 'code', agentType: 'code-generator', prompt: codePrompt };
+      await this.generate(projectId, codePayload);
+
+      console.log(`[Magic Build] Finished successfully for project ${projectId}`);
+    } catch (e) {
+      console.error(`[Magic Build] Failed for project ${projectId}`, e);
+    }
+  }
 }

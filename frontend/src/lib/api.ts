@@ -64,6 +64,11 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ prompt }),
       }),
+    magicBuild: (projectId: string, prompt: string) =>
+      request<any>(`/v1/projects/${projectId}/artefacts/magic-build`, {
+        method: 'POST',
+        body: JSON.stringify({ prompt }),
+      }),
   },
   agents: {
     list: () => request<any[]>('/v1/agents'),

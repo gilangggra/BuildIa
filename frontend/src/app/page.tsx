@@ -35,7 +35,6 @@ export default function LandingPage() {
           i++;
         } else {
           clearInterval(typingInterval);
-          // Reset after 5 seconds to loop the typing effect
           setTimeout(() => {
             setTypedCode("");
             i = 0;
@@ -64,47 +63,29 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#030509] text-slate-200 selection:bg-blue-500/30 font-sans overflow-x-hidden relative">
-      {/* Animated Background Gradients */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <motion.div 
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }} 
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[150px]" 
-        />
-        <motion.div 
-          animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }} 
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute top-[20%] right-[-10%] w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[120px]" 
-        />
-        <motion.div style={{ y }} className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDMpIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMCA0MGw0MC00ME0wIDBsNDAgNDAiLz48L2c+PC9zdmc+')] opacity-30" />
-      </div>
-
+    <div className="min-h-screen bg-[#f7f3ee] text-[#181818] font-sans overflow-x-hidden relative selection:bg-[#181818]/10 selection:text-[#181818]">
+      
       {/* Navbar (Sticky) */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#030509]/80 backdrop-blur-xl border-b border-white/5">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#f7f3ee]/80 backdrop-blur-xl border-b border-[#181818]/10">
         <div className="flex items-center justify-between px-8 py-4 max-w-7xl mx-auto">
           <div className="flex items-center gap-3">
-            <div className="relative group cursor-pointer">
-              <div className="absolute inset-0 bg-blue-500 blur-md opacity-40 group-hover:opacity-70 transition-opacity rounded-xl" />
-              <div className="relative w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-900/50">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
+            <div className="w-9 h-9 bg-[#181818] rounded-[8px] flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-[#f7f3ee]" />
             </div>
-            <span className="text-2xl font-black tracking-tighter text-white">BuildIA</span>
+            <span className="text-[22px] font-semibold tracking-[-0.03em] text-[#181818]">BuildIA</span>
           </div>
           
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-            <Link href="#features" className="hover:text-white transition-colors">Features</Link>
-            <Link href="#how-it-works" className="hover:text-white transition-colors">How it Works</Link>
-            <Link href="#pricing" className="hover:text-white transition-colors">Pricing</Link>
+          <div className="hidden md:flex items-center gap-8 text-[15px] font-medium text-[#181818]/70">
+            <Link href="#features" className="hover:text-[#181818] transition-colors">Features</Link>
+            <Link href="#how-it-works" className="hover:text-[#181818] transition-colors">How it Works</Link>
+            <Link href="#pricing" className="hover:text-[#181818] transition-colors">Pricing</Link>
           </div>
 
           <div className="flex items-center gap-6">
-            <Link href="/auth" className="relative group">
-              <div className="absolute inset-0 bg-blue-500 blur-md opacity-40 group-hover:opacity-80 transition-opacity rounded-full" />
-              <div className="relative px-6 py-2.5 bg-blue-600 hover:bg-blue-500 transition-colors rounded-full flex items-center gap-2 text-sm font-bold text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] border border-blue-400/20">
+            <Link href="/auth">
+              <div className="px-6 py-2.5 bg-white hover:bg-black/5 border border-[#181818]/20 transition-colors rounded-[8px] flex items-center gap-2 text-[15px] font-semibold text-[#181818] shadow-[0_2px_8px_rgba(24,24,24,0.04)]">
                 Get Started
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4" />
               </div>
             </Link>
           </div>
@@ -119,36 +100,35 @@ export default function LandingPage() {
           variants={containerVariants}
           className="flex flex-col items-center max-w-4xl"
         >
-          <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-semibold mb-8 backdrop-blur-sm cursor-pointer hover:bg-blue-500/20 transition-colors">
-            <Zap className="w-4 h-4 text-amber-400" />
+          <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#181818]/5 text-[#181818] text-[14px] font-semibold mb-8">
+            <Zap className="w-4 h-4" />
             <span>BuildIA 1.0 is now live</span>
           </motion.div>
           
-          <motion.h1 variants={itemVariants} className="text-6xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-slate-200 to-slate-600 leading-[1.1] mb-8">
+          <motion.h1 variants={itemVariants} className="text-[4rem] md:text-[6.5rem] font-semibold tracking-[-0.04em] text-[#181818] leading-[1.05] mb-8">
             The AI co-founder <br className="hidden md:block" />
-            you've been <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">waiting for.</span>
+            you've been <span className="text-[#181818]/50">waiting for.</span>
           </motion.h1>
           
-          <motion.p variants={itemVariants} className="text-lg md:text-2xl text-slate-400 max-w-2xl mb-12 leading-relaxed font-light">
+          <motion.p variants={itemVariants} className="text-[18px] md:text-[22px] text-[#181818]/70 max-w-3xl mb-12 leading-[1.6] font-medium">
             Stop writing boilerplate. Command intelligent agents to architecture, code, and deploy your next big idea directly from your browser.
           </motion.p>
           
           <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-            <Link href="/auth" className="relative group w-full sm:w-auto">
-              <div className="absolute inset-0 bg-blue-500 blur-xl opacity-50 group-hover:opacity-80 transition-opacity rounded-full" />
-              <div className="relative px-8 py-4 bg-gradient-to-b from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-600 transition-all rounded-full flex items-center justify-center gap-3 text-lg font-bold text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.3)] border border-blue-400/30">
+            <Link href="/auth" className="w-full sm:w-auto">
+              <div className="px-8 py-4 bg-[#181818] hover:bg-[#2a2a2a] transition-all rounded-[8px] flex items-center justify-center gap-3 text-[17px] font-semibold text-[#f7f3ee] shadow-[0_8px_20px_rgba(24,24,24,0.12)]">
                 Start Building Free
-                <Rocket className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                <Rocket className="w-5 h-5" />
               </div>
             </Link>
             
-            <Link href="#features" className="px-8 py-4 bg-white/5 hover:bg-white/10 transition-colors rounded-full flex items-center justify-center gap-2 text-lg font-medium text-slate-200 border border-white/10 backdrop-blur-md w-full sm:w-auto">
+            <Link href="#features" className="px-8 py-4 bg-white hover:bg-black/5 transition-colors rounded-[8px] flex items-center justify-center gap-2 text-[17px] font-semibold text-[#181818] border border-[#181818]/20 shadow-[0_2px_8px_rgba(24,24,24,0.04)] w-full sm:w-auto">
               See How it Works
             </Link>
           </motion.div>
           
-          <motion.p variants={itemVariants} className="text-sm text-slate-500 mt-6 flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-green-500" /> No credit card required. Free tier available.
+          <motion.p variants={itemVariants} className="text-[14px] text-[#181818]/60 mt-6 flex items-center gap-2 font-medium">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" /> No credit card required. Free tier available.
           </motion.p>
         </motion.div>
 
@@ -159,17 +139,16 @@ export default function LandingPage() {
           transition={{ delay: 0.8, duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
           className="w-full mt-24 relative group"
         >
-          <div className="absolute inset-0 bg-gradient-to-t from-[#030509] via-transparent to-transparent z-10 h-full pointer-events-none" />
-          <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(37,99,235,0.15)] bg-[#0A0D14] ring-1 ring-white/5 transition-transform duration-700 group-hover:scale-[1.02]">
+          <div className="relative rounded-[12px] overflow-hidden border border-[#181818]/10 shadow-[0_30px_80px_rgba(24,24,24,0.1)] bg-white transition-transform duration-700 group-hover:scale-[1.01]">
             {/* Fake Mac Header */}
-            <div className="flex items-center px-4 py-3 border-b border-white/5 bg-[#06090F]/80 backdrop-blur-md">
+            <div className="flex items-center px-4 py-3 border-b border-[#181818]/10 bg-white">
               <div className="flex gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                <div className="w-3 h-3 rounded-full bg-amber-500/80" />
-                <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                <div className="w-3 h-3 rounded-full bg-red-400" />
+                <div className="w-3 h-3 rounded-full bg-amber-400" />
+                <div className="w-3 h-3 rounded-full bg-emerald-400" />
               </div>
-              <div className="mx-auto px-6 py-1.5 rounded-md bg-[#030509] border border-white/5 text-xs text-slate-400 flex items-center gap-2 shadow-inner">
-                <ShieldCheck className="w-3 h-3 text-green-400" />
+              <div className="mx-auto px-4 py-1.5 rounded-[6px] bg-[#f7f3ee] border border-[#181818]/10 text-[12px] text-[#181818]/60 font-medium flex items-center gap-2">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#181818]/40" />
                 buildia.dev/workspace/app.ts
               </div>
             </div>
@@ -177,32 +156,37 @@ export default function LandingPage() {
             {/* Fake Code / Interface */}
             <div className="p-0 flex flex-col md:flex-row h-[450px] text-left">
                {/* Sidebar */}
-               <div className="hidden md:flex w-[250px] bg-[#06090F] border-r border-white/5 flex-col py-4">
-                  <div className="px-4 mb-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Explorer</div>
-                  <div className="flex flex-col space-y-1">
-                    <div className="px-4 py-1.5 bg-blue-500/10 text-blue-400 text-sm flex items-center gap-2 border-l-2 border-blue-500">
-                      <Code2 className="w-4 h-4" /> app.ts
+               <div className="hidden md:flex w-[240px] bg-[#f7f3ee] border-r border-[#181818]/10 flex-col py-4">
+                  <div className="px-5 mb-4 text-[11px] font-bold text-[#181818]/40 uppercase tracking-wider">Explorer</div>
+                  <div className="flex flex-col space-y-0.5">
+                    <div className="px-5 py-2 bg-white text-[#181818] font-semibold text-[14px] flex items-center gap-3 border-l-[3px] border-[#181818] shadow-sm">
+                      <Code2 className="w-4 h-4 text-[#181818]/60" /> app.ts
                     </div>
-                    <div className="px-4 py-1.5 text-slate-400 text-sm flex items-center gap-2 hover:bg-white/5 cursor-pointer">
-                      <Bot className="w-4 h-4" /> agents.config.ts
+                    <div className="px-5 py-2 text-[#181818]/70 font-medium text-[14px] flex items-center gap-3 hover:bg-white cursor-pointer border-l-[3px] border-transparent">
+                      <Bot className="w-4 h-4 text-[#181818]/40" /> agents.config.ts
                     </div>
-                    <div className="px-4 py-1.5 text-slate-400 text-sm flex items-center gap-2 hover:bg-white/5 cursor-pointer">
-                      <GitBranch className="w-4 h-4" /> schema.prisma
+                    <div className="px-5 py-2 text-[#181818]/70 font-medium text-[14px] flex items-center gap-3 hover:bg-white cursor-pointer border-l-[3px] border-transparent">
+                      <GitBranch className="w-4 h-4 text-[#181818]/40" /> schema.prisma
                     </div>
                   </div>
                </div>
                
                {/* Main Editor */}
-               <div className="flex-1 bg-[#0A0D14] p-6 font-mono text-[15px] leading-relaxed relative overflow-hidden">
-                 <div className="flex text-slate-300">
-                   <div className="w-8 text-slate-600 select-none text-right pr-4 border-r border-white/5 mr-4 flex flex-col gap-1">
+               <div className="flex-1 bg-white p-6 font-mono text-[15px] leading-relaxed relative overflow-hidden">
+                 <div className="flex text-[#181818]">
+                   <div className="w-8 text-[#181818]/30 select-none text-right pr-4 mr-4 flex flex-col gap-1">
                      <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span>
                    </div>
-                   <div className="whitespace-pre-wrap">
-                     {typedCode}
+                   <div className="whitespace-pre-wrap font-medium">
+                     <span className="text-[#181818]/50">import</span> {"{ AIOrchestrator }"} <span className="text-[#181818]/50">from</span> "@buildia/core";
+                     <br/><br/>
+                     <span className="text-[#181818]/50">const</span> agent = <span className="text-[#181818]/50">new</span> AIOrchestrator();
+                     <br/><br/>
+                     <span className="text-[#181818]/40 italic">// Analyzing architecture...</span>
+                     <br/>
+                     <span className="text-[#181818]/50">await</span> agent.deployFullStackApp();
                      
-                     {/* Typing animation overlay cursor */}
-                     <span className="inline-block w-2.5 h-5 bg-white/80 animate-pulse ml-1 align-middle" />
+                     <span className="inline-block w-2 h-4 bg-[#181818] animate-pulse ml-1 align-middle" />
                    </div>
                  </div>
                </div>
@@ -212,18 +196,17 @@ export default function LandingPage() {
       </main>
 
       {/* How It Works */}
-      <section id="how-it-works" className="relative z-10 py-32 bg-[#06090F]">
+      <section id="how-it-works" className="relative z-10 py-32 bg-white border-t border-[#181818]/10">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-black text-white mb-6">How <span className="text-blue-400">BuildIA</span> Works</h2>
-            <p className="text-slate-400 max-w-2xl mx-auto text-lg">
+          <div className="text-center mb-24">
+            <h2 className="text-[3rem] md:text-[4rem] font-semibold tracking-[-0.03em] text-[#181818] mb-6">How <span className="text-[#181818]/50">BuildIA</span> Works</h2>
+            <p className="text-[#181818]/70 max-w-2xl mx-auto text-[18px] font-medium">
               From concept to deployed application in three simple steps.
             </p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-12 relative">
-            {/* Connecting line */}
-            <div className="hidden md:block absolute top-1/2 left-[10%] right-[10%] h-0.5 bg-gradient-to-r from-blue-500/0 via-blue-500/20 to-blue-500/0 -translate-y-1/2 z-0" />
+            <div className="hidden md:block absolute top-12 left-[15%] right-[15%] h-[1px] bg-[#181818]/10 -translate-y-1/2 z-0" />
             
             {[
               { step: "01", title: "Prompt your Vision", desc: "Describe the application you want to build in plain English. Our AI analyzes your requirements instantly." },
@@ -231,11 +214,11 @@ export default function LandingPage() {
               { step: "03", title: "Deploy & Iterate", desc: "Watch the code run in our WebContainer sandbox. Chat with agents to tweak features in real-time." },
             ].map((item, i) => (
               <div key={i} className="relative z-10 flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-2xl bg-[#030509] border border-blue-500/30 text-blue-400 flex items-center justify-center text-2xl font-black shadow-[0_0_30px_rgba(59,130,246,0.2)] mb-6">
+                <div className="w-24 h-24 rounded-[16px] bg-[#f7f3ee] border border-[#181818]/10 text-[#181818] flex items-center justify-center text-[24px] font-semibold mb-8">
                   {item.step}
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4">{item.title}</h3>
-                <p className="text-slate-400">{item.desc}</p>
+                <h3 className="text-[22px] font-semibold text-[#181818] mb-4 tracking-tight">{item.title}</h3>
+                <p className="text-[#181818]/70 font-medium text-[16px] leading-[1.6] max-w-xs">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -243,11 +226,11 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="relative z-10 py-32 bg-[#030509]">
+      <section id="features" className="relative z-10 py-32 bg-[#f7f3ee] border-t border-[#181818]/10">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-black text-white mb-6">Unfair <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Advantage</span></h2>
-            <p className="text-slate-400 max-w-2xl mx-auto text-lg">
+          <div className="text-center mb-24">
+            <h2 className="text-[3rem] md:text-[4rem] font-semibold tracking-[-0.03em] text-[#181818] mb-6">Unfair <span className="text-[#181818]/50">Advantage</span></h2>
+            <p className="text-[#181818]/70 max-w-2xl mx-auto text-[18px] font-medium">
               Everything you need to conceptualize, build, and deploy software autonomously.
             </p>
           </div>
@@ -258,12 +241,12 @@ export default function LandingPage() {
               { icon: Terminal, title: "In-Browser Sandbox", desc: "Powered by WebContainers. Run full Node.js environments directly in your browser. No local setup required." },
               { icon: Cpu, title: "Native Architecture", desc: "Generate and visualize system architectures, database schemas, and state diagrams instantly." }
             ].map((feat, idx) => (
-              <div key={idx} className="bg-[#0A0D14] border border-white/5 rounded-3xl p-10 hover:bg-[#0C101A] hover:border-blue-500/20 transition-all duration-300 group cursor-default">
-                <div className="w-14 h-14 bg-blue-500/10 border border-blue-500/20 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
-                  <feat.icon className="w-7 h-7 text-blue-400" />
+              <div key={idx} className="bg-white border border-[#181818]/20 rounded-[16px] p-10 hover:border-[#181818]/40 transition-colors group">
+                <div className="w-14 h-14 bg-[#181818]/5 border border-[#181818]/10 rounded-[8px] flex items-center justify-center mb-8">
+                  <feat.icon className="w-6 h-6 text-[#181818]" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4">{feat.title}</h3>
-                <p className="text-slate-400 leading-relaxed text-lg">
+                <h3 className="text-[22px] font-semibold text-[#181818] mb-4 tracking-tight">{feat.title}</h3>
+                <p className="text-[#181818]/70 font-medium leading-[1.6] text-[16px]">
                   {feat.desc}
                 </p>
               </div>
@@ -273,61 +256,60 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section (Teaser) */}
-      <section id="pricing" className="relative z-10 py-32 bg-[#06090F] border-t border-white/5">
+      <section id="pricing" className="relative z-10 py-32 bg-white border-t border-[#181818]/10">
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-4xl md:text-5xl font-black text-white mb-6">Start building for <span className="text-blue-400">free</span></h2>
-          <p className="text-slate-400 text-lg mb-12">Join thousands of developers accelerating their workflow with BuildIA.</p>
+          <h2 className="text-[3rem] md:text-[4rem] font-semibold tracking-[-0.03em] text-[#181818] mb-6">Start building for <span className="text-[#181818]/50">free</span></h2>
+          <p className="text-[#181818]/70 text-[18px] mb-12 font-medium">Join thousands of developers accelerating their workflow with BuildIA.</p>
           
-          <div className="p-10 rounded-3xl bg-gradient-to-b from-[#0A0D14] to-[#030509] border border-white/10 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px]" />
-            <h3 className="text-3xl font-bold text-white mb-2">Pro Developer</h3>
-            <div className="text-5xl font-black text-white mb-8">$0<span className="text-xl text-slate-500 font-medium">/mo during beta</span></div>
+          <div className="p-12 rounded-[16px] bg-[#181818] text-[#f7f3ee] shadow-[0_20px_60px_rgba(24,24,24,0.15)] relative overflow-hidden flex flex-col items-center">
+            <h3 className="text-[24px] font-semibold mb-2">Pro Developer</h3>
+            <div className="text-[4rem] font-semibold mb-10 tracking-[-0.03em]">$0<span className="text-[20px] text-[#f7f3ee]/50 font-medium tracking-normal">/mo during beta</span></div>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/auth" className="px-8 py-4 bg-white text-[#030509] hover:bg-slate-200 transition-colors rounded-full font-bold text-lg">
-                Create Free Account
-              </Link>
-            </div>
+            <Link href="/auth" className="px-8 py-4 bg-[#f7f3ee] text-[#181818] hover:bg-white transition-colors rounded-[8px] font-semibold text-[16px] shadow-[0_4px_12px_rgba(255,255,255,0.1)]">
+              Create Free Account
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 bg-[#030509] pt-20 pb-10">
+      <footer className="border-t border-[#181818]/10 bg-[#f7f3ee] pt-24 pb-12">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-16">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-20">
             <div className="col-span-2">
               <div className="flex items-center gap-2 mb-6">
-                <Sparkles className="w-6 h-6 text-blue-500" />
-                <span className="text-2xl font-black text-white tracking-tighter">BuildIA</span>
+                <div className="w-8 h-8 bg-[#181818] rounded-[6px] flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-[#f7f3ee]" />
+                </div>
+                <span className="text-[20px] font-semibold text-[#181818] tracking-[-0.03em]">BuildIA</span>
               </div>
-              <p className="text-slate-400 max-w-sm">The world's first AI-native IDE built directly into your browser. Code, test, and ship faster.</p>
+              <p className="text-[#181818]/70 font-medium max-w-sm leading-[1.6]">The world's first AI-native IDE built directly into your browser. Code, test, and ship faster.</p>
             </div>
             <div>
-              <h4 className="text-white font-bold mb-4">Product</h4>
-              <div className="flex flex-col gap-3 text-slate-400">
-                <Link href="#" className="hover:text-blue-400">Features</Link>
-                <Link href="#" className="hover:text-blue-400">Pricing</Link>
-                <Link href="#" className="hover:text-blue-400">Changelog</Link>
+              <h4 className="text-[#181818] font-semibold mb-6 tracking-tight">Product</h4>
+              <div className="flex flex-col gap-4 text-[#181818]/70 font-medium text-[15px]">
+                <Link href="#" className="hover:text-[#181818] transition-colors">Features</Link>
+                <Link href="#" className="hover:text-[#181818] transition-colors">Pricing</Link>
+                <Link href="#" className="hover:text-[#181818] transition-colors">Changelog</Link>
               </div>
             </div>
             <div>
-              <h4 className="text-white font-bold mb-4">Company</h4>
-              <div className="flex flex-col gap-3 text-slate-400">
-                <Link href="#" className="hover:text-blue-400">About Us</Link>
-                <Link href="#" className="hover:text-blue-400">Careers</Link>
-                <Link href="#" className="hover:text-blue-400">Contact</Link>
+              <h4 className="text-[#181818] font-semibold mb-6 tracking-tight">Company</h4>
+              <div className="flex flex-col gap-4 text-[#181818]/70 font-medium text-[15px]">
+                <Link href="#" className="hover:text-[#181818] transition-colors">About Us</Link>
+                <Link href="#" className="hover:text-[#181818] transition-colors">Careers</Link>
+                <Link href="#" className="hover:text-[#181818] transition-colors">Contact</Link>
               </div>
             </div>
           </div>
           
-          <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-slate-500 text-sm">
+          <div className="border-t border-[#181818]/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-[#181818]/50 font-medium text-[14px]">
               © {new Date().getFullYear()} BuildIA Inc. All rights reserved.
             </p>
-            <div className="flex gap-6 text-sm text-slate-500">
-              <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
-              <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>
+            <div className="flex gap-8 text-[14px] text-[#181818]/50 font-medium">
+              <Link href="#" className="hover:text-[#181818] transition-colors">Privacy Policy</Link>
+              <Link href="#" className="hover:text-[#181818] transition-colors">Terms of Service</Link>
             </div>
           </div>
         </div>

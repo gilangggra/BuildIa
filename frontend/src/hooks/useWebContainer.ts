@@ -109,5 +109,19 @@ export function useWebContainer(viewMode: 'code' | 'preview' | 'terminal', activ
     setPreviewUrl('');
   };
 
-  return { terminalRef, previewUrl, isWcReady, restartEnvironment };
+  const syncCode = async (content: string) => {
+    if (isWcReady && activeArtefact?.type === 'code') {
+      try {
+        const files = [
+          { name: 'src/App.jsx', content }
+        ];
+        await mountFiles(files);
+        xtermRef.current?.writeln('\r\n[Sync] Updated src/App.jsx from Editor');
+      } catch (err: any) {
+        xtermRef.current?.writeln(`\r\n[Sync Error]: ${err.message}`);
+      }
+    }
+  };
+
+  return { terminalRef, previewUrl, isWcReady, restartEnvironment, syncCode };
 }

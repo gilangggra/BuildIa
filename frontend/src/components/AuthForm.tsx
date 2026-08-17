@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -54,22 +53,19 @@ export default function AuthForm() {
 
   return (
     <div className="w-full max-w-[420px] mx-auto">
-      <div className="bg-[#0A0D14]/90 backdrop-blur-2xl border border-white/10 p-8 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden">
+      <div className="bg-[#f7f3ee] p-8 rounded-[12px] shadow-[0_8px_30px_rgba(24,24,24,0.04)] border border-[#181818]/20 relative overflow-hidden">
         
-        {/* Subtle inner glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[100px] bg-blue-500/20 blur-[60px] pointer-events-none" />
-
         {/* Toggle Tabs */}
-        <div className="flex bg-[#030509]/80 p-1.5 rounded-2xl mb-8 border border-white/5 relative z-10">
+        <div className="flex bg-[#181818]/5 p-1.5 rounded-[8px] mb-8 border border-[#181818]/10 relative z-10">
           <button
             onClick={() => { setIsLogin(true); setErrorMsg(""); setSuccessMsg(""); }}
-            className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${isLogin ? 'bg-white/10 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
+            className={`flex-1 py-2 text-[14px] font-semibold rounded-[6px] transition-all ${isLogin ? 'bg-white text-[#181818] shadow-[0_2px_8px_rgba(24,24,24,0.08)]' : 'text-[#181818]/60 hover:text-[#181818]'}`}
           >
             Sign In
           </button>
           <button
             onClick={() => { setIsLogin(false); setErrorMsg(""); setSuccessMsg(""); }}
-            className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${!isLogin ? 'bg-white/10 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
+            className={`flex-1 py-2 text-[14px] font-semibold rounded-[6px] transition-all ${!isLogin ? 'bg-white text-[#181818] shadow-[0_2px_8px_rgba(24,24,24,0.08)]' : 'text-[#181818]/60 hover:text-[#181818]'}`}
           >
             Sign Up
           </button>
@@ -78,12 +74,12 @@ export default function AuthForm() {
         {/* Status Messages */}
         <AnimatePresence>
           {errorMsg && (
-            <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }} className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-start gap-2 relative z-10">
+            <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }} className="mb-6 p-3 bg-red-50 border border-red-200 rounded-[8px] text-red-700 text-[14px] flex items-start gap-2 relative z-10 font-medium">
               <span>{errorMsg}</span>
             </motion.div>
           )}
           {successMsg && (
-            <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }} className="mb-6 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-sm flex items-start gap-2 relative z-10">
+            <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }} className="mb-6 p-3 bg-emerald-50 border border-emerald-200 rounded-[8px] text-emerald-700 text-[14px] flex items-start gap-2 relative z-10 font-medium">
               <span>{successMsg}</span>
             </motion.div>
           )}
@@ -101,11 +97,11 @@ export default function AuthForm() {
                 className="overflow-hidden"
               >
                 <div className="relative pb-1">
-                  <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-500" />
+                  <User className="absolute left-4 top-3.5 h-[18px] w-[18px] text-[#181818]/40" />
                   <input
                     type="text"
                     placeholder="Full Name"
-                    className="w-full bg-white/5 border border-white/10 hover:border-white/20 focus:bg-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-[15px] text-white rounded-2xl pl-12 pr-4 py-3 outline-none transition-all placeholder:text-slate-600"
+                    className="w-full bg-white border border-[#181818]/20 focus:border-[#181818] focus:ring-1 focus:ring-[#181818] text-[15px] text-[#181818] rounded-[8px] pl-11 pr-4 py-3 outline-none transition-all placeholder:text-[#181818]/40 font-medium"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required={!isLogin}
@@ -116,11 +112,11 @@ export default function AuthForm() {
           </AnimatePresence>
 
           <div className="relative">
-            <Mail className="absolute left-4 top-3.5 h-5 w-5 text-slate-500" />
+            <Mail className="absolute left-4 top-3.5 h-[18px] w-[18px] text-[#181818]/40" />
             <input
               type="email"
               placeholder="Email Address"
-              className="w-full bg-white/5 border border-white/10 hover:border-white/20 focus:bg-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-[15px] text-white rounded-2xl pl-12 pr-4 py-3 outline-none transition-all placeholder:text-slate-600"
+              className="w-full bg-white border border-[#181818]/20 focus:border-[#181818] focus:ring-1 focus:ring-[#181818] text-[15px] text-[#181818] rounded-[8px] pl-11 pr-4 py-3 outline-none transition-all placeholder:text-[#181818]/40 font-medium"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
@@ -128,11 +124,11 @@ export default function AuthForm() {
           </div>
 
           <div className="relative">
-            <Lock className="absolute left-4 top-3.5 h-5 w-5 text-slate-500" />
+            <Lock className="absolute left-4 top-3.5 h-[18px] w-[18px] text-[#181818]/40" />
             <input
               type="password"
               placeholder="Password"
-              className="w-full bg-white/5 border border-white/10 hover:border-white/20 focus:bg-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-[15px] text-white rounded-2xl pl-12 pr-4 py-3 outline-none transition-all placeholder:text-slate-600"
+              className="w-full bg-white border border-[#181818]/20 focus:border-[#181818] focus:ring-1 focus:ring-[#181818] text-[15px] text-[#181818] rounded-[8px] pl-11 pr-4 py-3 outline-none transition-all placeholder:text-[#181818]/40 font-medium"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               required
@@ -142,17 +138,16 @@ export default function AuthForm() {
           <button 
             type="submit" 
             disabled={loading} 
-            className="group relative w-full overflow-hidden rounded-2xl mt-4 disabled:opacity-70 disabled:cursor-not-allowed"
+            className="group relative w-full overflow-hidden rounded-[8px] mt-4 disabled:opacity-70 disabled:cursor-not-allowed shadow-[0_3px_10px_rgba(24,24,24,0.12)] bg-[#181818]"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600" />
-            <div className="absolute inset-0 bg-blue-500 blur-md opacity-0 group-hover:opacity-40 transition-opacity" />
-            <div className="relative w-full py-3.5 px-4 flex items-center justify-center gap-2 text-white font-bold transition-all shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] border border-blue-400/30 rounded-2xl">
+            <div className="absolute inset-0 bg-[#2a2a2a] opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative w-full py-3.5 px-4 flex items-center justify-center gap-2 text-[#f7f3ee] font-semibold transition-all text-[15px]">
               {loading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
                 <>
                   {isLogin ? 'Sign In to BuildIA' : 'Create Account'}
-                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="h-[18px] w-[18px] group-hover:translate-x-1 transition-transform" />
                 </>
               )}
             </div>
@@ -161,13 +156,13 @@ export default function AuthForm() {
 
         <div className="mt-8 relative z-10">
           <div className="relative flex items-center py-4">
-            <div className="flex-grow border-t border-white/10"></div>
-            <span className="flex-shrink-0 mx-4 text-slate-600 text-xs font-bold tracking-wider uppercase">OR</span>
-            <div className="flex-grow border-t border-white/10"></div>
+            <div className="flex-grow border-t border-[#181818]/10"></div>
+            <span className="flex-shrink-0 mx-4 text-[#181818]/40 text-[11px] font-bold tracking-wider uppercase">OR</span>
+            <div className="flex-grow border-t border-[#181818]/10"></div>
           </div>
           
-          <button type="button" className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-2xl transition-all text-[15px] text-slate-300 font-bold group">
-            <Code className="h-5 w-5 text-slate-400 group-hover:text-white transition-colors" />
+          <button type="button" className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white hover:bg-black/5 border border-[#181818]/20 rounded-[8px] transition-all text-[15px] text-[#181818] font-semibold group shadow-[0_2px_8px_rgba(24,24,24,0.04)]">
+            <Code className="h-5 w-5 text-[#181818]/60 group-hover:text-[#181818] transition-colors" />
             Continue with GitHub
           </button>
         </div>

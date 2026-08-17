@@ -26,6 +26,14 @@ export class ArtefactsController {
     return this.artefactsService.generate(projectId, generateDto);
   }
 
+  @Post('magic-build')
+  magicBuild(
+    @Param('projectId') projectId: string,
+    @Body() dto: { prompt: string },
+  ) {
+    return this.artefactsService.magicBuild(projectId, dto.prompt);
+  }
+
   @Post(':id/refactor')
   refactor(
     @Param('projectId') projectId: string,
