@@ -7,23 +7,36 @@ import { SupabaseService } from '../supabase/supabase.service';
 
 @Injectable()
 export class AiService {
-  private ai: GoogleGenAI;
-
   constructor(
     private configService: ConfigService,
     private supabaseService: SupabaseService,
-  ) {
-    const apiKey = this.configService.get<string>('GEMINI_API_KEY');
-    if (!apiKey) {
-      console.warn('GEMINI_API_KEY is missing in .env!');
+  ) {}
+
+  async getUserApiKey(userId?: string): Promise<string> {
+    if (userId) {
+      try {
+        const { data } = await this.supabaseService.getClient().from('profiles').select('preferences').eq('id', userId).single();
+        if (data?.preferences?.geminiToken) {
+          return data.preferences.geminiToken;
+        }
+      } catch (e) {
+        console.warn('Failed to fetch user geminiToken, falling back to server key');
+      }
     }
-    // Inisialisasi client Google Gen AI
-    this.ai = new GoogleGenAI({ apiKey: apiKey || 'dummy_key_for_build' });
+    const envKey = this.configService.get<string>('GEMINI_API_KEY');
+    if (!envKey) console.warn('GEMINI_API_KEY is missing in .env!');
+    return envKey || 'dummy_key_for_build';
   }
 
-  async generateEmbedding(text: string): Promise<number[]> {
+  private getAiClient(apiKey: string): GoogleGenAI {
+    return new GoogleGenAI({ apiKey });
+  }
+
+  async generateEmbedding(text: string, userId?: string): Promise<number[]> {
     try {
-      const response = await this.ai.models.embedContent({
+      const apiKey = await this.getUserApiKey(userId);
+      const ai = this.getAiClient(apiKey);
+      const response = await ai.models.embedContent({
         model: 'embedding-001',
         contents: text,
       });
@@ -59,9 +72,11 @@ export class AiService {
     return 'You are a helpful AI assistant for software development.';
   }
 
-  async generateRawContent(contents: any[], systemInstruction: string) {
+  async generateRawContent(contents: any[], systemInstruction: string, userId?: string) {
     try {
-      const response = await this.ai.models.generateContent({
+      const apiKey = await this.getUserApiKey(userId);
+      const ai = this.getAiClient(apiKey);
+      const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: contents,
         config: { systemInstruction: systemInstruction },

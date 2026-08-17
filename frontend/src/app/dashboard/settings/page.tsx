@@ -7,14 +7,19 @@ import { supabase } from "@/lib/supabase";
 export default function SettingsPage() {
   const [loading, setLoading] = useState(false);
   const [githubToken, setGithubToken] = useState("");
+  const [geminiToken, setGeminiToken] = useState("");
   const [message, setMessage] = useState({ type: "", text: "" });
 
   useEffect(() => {
     // Load existing preferences if any
     const loadSettings = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user?.user_metadata?.github_token) {
-        setGithubToken(session.user.user_metadata.github_token);
+      if (session?.user?.id) {
+        const { data } = await supabase.from('profiles').select('preferences').eq('id', session.user.id).single();
+        if (data?.preferences) {
+          if (data.preferences.githubToken) setGithubToken(data.preferences.githubToken);
+          if (data.preferences.geminiToken) setGeminiToken(data.preferences.geminiToken);
+        }
       }
     };
     loadSettings();
@@ -26,9 +31,11 @@ export default function SettingsPage() {
     setMessage({ type: "", text: "" });
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        data: { github_token: githubToken }
-      });
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.id) throw new Error("No active session");
+
+      const preferences = { githubToken, geminiToken };
+      const { error } = await supabase.from('profiles').update({ preferences }).eq('id', session.user.id);
 
       if (error) throw error;
       setMessage({ type: "success", text: "Settings saved successfully." });
@@ -99,6 +106,22 @@ export default function SettingsPage() {
                 />
                 <p className="text-[13px] text-[#181818]/60 mt-3 font-medium">
                   Needs <code className="px-1.5 py-0.5 bg-white border border-[#181818]/10 rounded text-[#181818] font-mono text-xs">repo</code> scope to create and push to repositories.
+                </p>
+              </div>
+              
+              <div className="pt-4 border-t border-[#181818]/10">
+                <label className="block text-[14px] font-semibold mb-2.5 flex items-center gap-2">
+                  <Key className="h-4 w-4 text-[#181818]/60" /> Google Gemini API Key
+                </label>
+                <input
+                  type="password"
+                  value={geminiToken}
+                  onChange={(e) => setGeminiToken(e.target.value)}
+                  placeholder="AIzaSy..."
+                  className="w-full bg-white border border-[#181818]/20 focus:border-[#181818] focus:ring-1 focus:ring-[#181818] rounded-[8px] px-4 py-3 outline-none transition-all placeholder:text-[#181818]/30 font-medium text-[15px]"
+                />
+                <p className="text-[13px] text-[#181818]/60 mt-3 font-medium">
+                  Provide your own Gemini API key to power your personal AI Developer workspace.
                 </p>
               </div>
             </div>

@@ -40,7 +40,7 @@ export class ArtefactsService {
     return data;
   }
 
-  async generate(projectId: string, payload: any) {
+  async generate(projectId: string, payload: any, userId: string) {
     // 1. Human-in-the-loop Check
     if (payload.agentType === 'code-generator') {
       const { data: srsArtefacts } = await this.supabaseService
@@ -89,7 +89,8 @@ export class ArtefactsService {
       payload.agentType,
       payload.prompt,
       projectId,
-      chatHistory
+      chatHistory,
+      userId
     );
 
     // 3. Save to Supabase
@@ -117,13 +118,13 @@ export class ArtefactsService {
     // 4. Autonomous QA Trigger (Fire and Forget)
     if (payload.agentType === 'code-generator' || payload.type === 'code') {
       // Intentionally not awaiting so it runs in the background
-      this.triggerAutonomousQA(projectId, data.content).catch(console.error);
+      this.triggerAutonomousQA(projectId, data.content, userId).catch(console.error);
     }
 
     return data;
   }
 
-  private async triggerAutonomousQA(projectId: string, sourceCode: string) {
+  private async triggerAutonomousQA(projectId: string, sourceCode: string, userId: string) {
     try {
       console.log(`[Autonomous QA] Triggering tests for project ${projectId}...`);
       const prompt = `[AUTO-QA] Generate Cypress E2E tests for the following code:\n\n${sourceCode}`;
@@ -131,7 +132,9 @@ export class ArtefactsService {
       const aiResult = await this.aiOrchestratorService.generateArtefact(
         'qa-tester',
         prompt,
-        projectId
+        projectId,
+        [],
+        userId
       );
 
       const { data, error } = await this.supabaseService
@@ -160,7 +163,7 @@ export class ArtefactsService {
     }
   }
 
-  async update(projectId: string, id: string, payload: any) {
+  async update(projectId: string, id: string, payload: any, userId?: string) {
     const supabase = this.supabaseService.getClient();
     let updatePayload = { ...payload };
 
@@ -170,7 +173,7 @@ export class ArtefactsService {
         // Fetch content to embed if not provided in payload
         const contentToEmbed = payload.content || (await this.findOne(projectId, id)).content;
         if (contentToEmbed) {
-          const embedding = await this.aiService.generateEmbedding(contentToEmbed);
+          const embedding = await this.aiService.generateEmbedding(contentToEmbed, userId);
           if (embedding && embedding.length > 0) {
             // Stringify as array string for Supabase vector column
             updatePayload.embedding = `[${embedding.join(',')}]`;
@@ -194,7 +197,7 @@ export class ArtefactsService {
     return data;
   }
 
-  async refactorArtefact(projectId: string, id: string, prompt: string) {
+  async refactorArtefact(projectId: string, id: string, prompt: string, userId: string) {
     // 1. Fetch existing artefact
     const artefact = await this.findOne(projectId, id);
 
@@ -206,7 +209,9 @@ export class ArtefactsService {
     const aiResult = await this.aiOrchestratorService.generateArtefact(
       agentType,
       fullPrompt,
-      projectId
+      projectId,
+      [],
+      userId
     );
 
     // 4. Return as a proposal (do not overwrite DB yet)
@@ -217,34 +222,34 @@ export class ArtefactsService {
     };
   }
 
-  async magicBuild(projectId: string, prompt: string) {
+  async magicBuild(projectId: string, prompt: string, userId: string) {
     // Fire and forget so we don't block the request
-    this.runMagicBuildPipeline(projectId, prompt).catch(console.error);
+    this.runMagicBuildPipeline(projectId, prompt, userId).catch(console.error);
     return { status: 'started', message: 'Magic Build pipeline started in background' };
   }
 
-  private async runMagicBuildPipeline(projectId: string, userPrompt: string) {
+  private async runMagicBuildPipeline(projectId: string, userPrompt: string, userId: string) {
     try {
       console.log(`[Magic Build] Started for project ${projectId}`);
       
       // Step 1: Ideator (SRS)
       console.log(`[Magic Build] Step 1: Ideator`);
       const srsPayload = { type: 'srs', agentType: 'ideator', prompt: userPrompt };
-      const srsArtefact = await this.generate(projectId, srsPayload);
-      await this.update(projectId, srsArtefact.id, { status: 'approved' }); // Auto-approve for the pipeline
+      const srsArtefact = await this.generate(projectId, srsPayload, userId);
+      await this.update(projectId, srsArtefact.id, { status: 'approved' }, userId); // Auto-approve for the pipeline
 
       // Step 2: Diagrammer
       console.log(`[Magic Build] Step 2: Diagrammer`);
       const diagramPrompt = `Based on the SRS we just created for "${userPrompt}", create a system architecture diagram.`;
       const diagramPayload = { type: 'diagram', agentType: 'diagrammer', prompt: diagramPrompt };
-      const diagramArtefact = await this.generate(projectId, diagramPayload);
-      await this.update(projectId, diagramArtefact.id, { status: 'approved' });
+      const diagramArtefact = await this.generate(projectId, diagramPayload, userId);
+      await this.update(projectId, diagramArtefact.id, { status: 'approved' }, userId);
 
       // Step 3: Coder
       console.log(`[Magic Build] Step 3: Coder`);
       const codePrompt = `Based on the SRS and Architecture diagram we just created for "${userPrompt}", write the full source code for the main application entry point (e.g., App.jsx or similar) that satisfies the requirements. Use Tailwind CSS if styling is needed.`;
       const codePayload = { type: 'code', agentType: 'code-generator', prompt: codePrompt };
-      await this.generate(projectId, codePayload);
+      await this.generate(projectId, codePayload, userId);
 
       console.log(`[Magic Build] Finished successfully for project ${projectId}`);
     } catch (e) {

@@ -8,11 +8,13 @@ import {
   Sparkles,
   LogOut,
   ChevronRight,
+  Store,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
+  { icon: Store, label: "Marketplace", href: "/dashboard/marketplace" },
   { icon: Settings, label: "Settings", href: "/dashboard/settings" },
 ];
 

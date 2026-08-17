@@ -100,9 +100,6 @@ export default function ProjectDetailPage() {
   const [isRefining, setIsRefining] = useState(false);
 
   // Custom Agent State
-  const [showAgentModal, setShowAgentModal] = useState(false);
-  const [newAgent, setNewAgent] = useState({ label: '', description: '', type: 'code', system_prompt: '' });
-  const [creatingAgent, setCreatingAgent] = useState(false);
   const [showAgentDropdown, setShowAgentDropdown] = useState(false);
   
   // Magic Build State
@@ -227,22 +224,6 @@ export default function ProjectDetailPage() {
 
 
 
-  const handleCreateAgent = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newAgent.label || !newAgent.system_prompt) return;
-    try {
-      setCreatingAgent(true);
-      await api.agents.create({ ...newAgent, icon_name: 'Bot' });
-      const updatedAgents = await api.agents.list();
-      setAgents(updatedAgents || []);
-      setShowAgentModal(false);
-      setNewAgent({ label: '', description: '', type: 'code', system_prompt: '' });
-    } catch (err: any) {
-      alert("Failed to create agent: " + err.message);
-    } finally {
-      setCreatingAgent(false);
-    }
-  };
 
   const handleInstallAgent = async (agentInfo: any) => {
     try {
@@ -728,9 +709,6 @@ export default function ProjectDetailPage() {
             <button type="button" onClick={() => setShowMarketplaceModal(true)} className="p-2 hover:bg-[#181818]/5 rounded-full text-[#181818] transition-colors" title="Agent Marketplace">
               <ShoppingCart className="h-4 w-4" />
             </button>
-            <button type="button" onClick={() => setShowAgentModal(true)} className="p-2 hover:bg-[#181818]/5 rounded-full text-[#181818]/40 hover:text-[#181818]/70 transition-colors" title="Create Custom Agent">
-              <Plus className="h-4 w-4" />
-            </button>
           </div>
 
           {/* Input Field */}
@@ -866,63 +844,7 @@ export default function ProjectDetailPage() {
         </div>
       )}
 
-      {/* Create Custom Agent Modal */}
-      {showAgentModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white border border-[#181818]/20 rounded-[12px] w-full max-w-md shadow-[0_8px_30px_rgba(24,24,24,0.06)] overflow-hidden">
-            <div className="px-6 py-5 border-b border-[#181818]/10 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-bold text-[#181818] flex items-center gap-2">
-                  <Bot className="h-5 w-5 text-[#181818]" /> New Agent
-                </h2>
-                <p className="text-xs text-[#181818]/60 mt-1 font-medium">Create a specialized AI agent.</p>
-              </div>
-              <button onClick={() => setShowAgentModal(false)} className="p-1.5 hover:bg-[#181818]/5 rounded-lg transition-colors">
-                <XCircle className="h-5 w-5 text-[#181818]/40" />
-              </button>
-            </div>
-            <form onSubmit={handleCreateAgent} className="p-6 space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-[#181818]/80 mb-1.5">Agent Name</label>
-                <input
-                  type="text"
-                  required
-                  value={newAgent.label}
-                  onChange={e => setNewAgent({ ...newAgent, label: e.target.value })}
-                  placeholder="e.g., Code Architect"
-                  className="w-full bg-[#f7f3ee] border border-[#181818]/20 focus:bg-white focus:border-[#181818] focus:ring-1 focus:ring-[#181818] rounded-[8px] px-4 py-2.5 text-sm font-medium text-[#181818] placeholder-slate-400 outline-none transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-[#181818]/80 mb-1.5">Description</label>
-                <input
-                  type="text"
-                  value={newAgent.description}
-                  onChange={e => setNewAgent({ ...newAgent, description: e.target.value })}
-                  placeholder="Short description of capabilities"
-                  className="w-full bg-[#f7f3ee] border border-[#181818]/20 focus:bg-white focus:border-[#181818] focus:ring-1 focus:ring-[#181818] rounded-[8px] px-4 py-2.5 text-sm font-medium text-[#181818] placeholder-slate-400 outline-none transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-[#181818]/80 mb-1.5">System Prompt</label>
-                <textarea
-                  required
-                  rows={4}
-                  value={newAgent.system_prompt}
-                  onChange={e => setNewAgent({ ...newAgent, system_prompt: e.target.value })}
-                  placeholder="You are an expert software engineer..."
-                  className="w-full bg-[#f7f3ee] border border-[#181818]/20 focus:bg-white focus:border-[#181818] focus:ring-1 focus:ring-[#181818] rounded-[8px] px-4 py-3 text-sm font-medium text-[#181818] placeholder-slate-400 outline-none transition-all resize-none"
-                />
-              </div>
-              <div className="pt-2">
-                <button type="submit" disabled={creatingAgent || !newAgent.label.trim() || !newAgent.system_prompt.trim()} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#181818] hover:bg-[#2a2a2a] disabled:opacity-60 text-[#f7f3ee] text-sm font-bold rounded-[8px] transition-colors shadow-sm">
-                  {creatingAgent ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create Agent"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+
 
       {/* Marketplace Modal */}
       {showMarketplaceModal && (

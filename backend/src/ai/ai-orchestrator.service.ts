@@ -9,7 +9,7 @@ export class AiOrchestratorService {
     private readonly supabaseService: SupabaseService,
   ) {}
 
-  async generateArtefact(agentType: string, customPrompt: string, projectId?: string, chatHistory: any[] = []) {
+  async generateArtefact(agentType: string, customPrompt: string, projectId?: string, chatHistory: any[] = [], userId?: string) {
     const MAX_RETRIES = 3;
     let attempts = 0;
     let currentPrompt = customPrompt;
@@ -23,7 +23,7 @@ export class AiOrchestratorService {
     // RAG Retrieval Logic
     if (projectId) {
       try {
-        const queryEmbedding = await this.aiService.generateEmbedding(customPrompt);
+        const queryEmbedding = await this.aiService.generateEmbedding(customPrompt, userId);
         if (queryEmbedding && queryEmbedding.length > 0) {
           const supabase = this.supabaseService.getClient();
           const { data: matchedArtefacts, error } = await supabase.rpc('match_artefacts', {
@@ -73,7 +73,7 @@ export class AiOrchestratorService {
         contents.push({ role: 'user', parts: [{ text: currentPrompt }] });
 
         // 1. Generate Content
-        const response = await this.aiService.generateRawContent(contents, systemInstruction);
+        const response = await this.aiService.generateRawContent(contents, systemInstruction, userId);
         
         let rawContent = response.text || '';
         
@@ -111,7 +111,7 @@ export class AiOrchestratorService {
           const reviewPrompt = `Review this code for critical syntax or logic errors:\n\n${finalResult}\n\nOutput ONLY valid JSON.`;
           
           const reviewContents = [{ role: 'user', parts: [{ text: reviewPrompt }] }];
-          const reviewResponse = await this.aiService.generateRawContent(reviewContents, reviewerInstruction);
+          const reviewResponse = await this.aiService.generateRawContent(reviewContents, reviewerInstruction, userId);
 
           totalPromptTokens += reviewResponse.usage.promptTokens;
           totalCompletionTokens += reviewResponse.usage.completionTokens;
