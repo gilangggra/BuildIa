@@ -55,7 +55,13 @@ export class AiOrchestratorService {
     while (attempts < MAX_RETRIES) {
       attempts++;
       try {
-        const systemInstruction = (await this.aiService.getSystemInstruction(agentType)) + retrievedContext;
+        let systemInstruction = (await this.aiService.getSystemInstruction(agentType)) + retrievedContext;
+        
+        // Enforce JSON output for code generator
+        if (agentType === 'code-generator') {
+          systemInstruction += '\n\nCRITICAL INSTRUCTION: You MUST output the entire application code as a single valid JSON object representing the file tree. The keys should be the full file paths (e.g., "src/App.jsx", "src/components/Header.jsx", "package.json") and the values should be the exact raw file contents. Output ONLY valid JSON inside a ```json block, or just raw JSON. Do NOT output any other text or explanation.';
+        }
+
         const contents: any[] = [];
         
         if (chatHistory && chatHistory.length > 0) {
@@ -68,7 +74,24 @@ export class AiOrchestratorService {
 
         // 1. Generate Content
         const response = await this.aiService.generateRawContent(contents, systemInstruction);
-        finalResult = response.text || '';
+        
+        let rawContent = response.text || '';
+        
+        // Try to parse out JSON if it's code generator
+        if (agentType === 'code-generator') {
+          try {
+            const cleanJson = rawContent.replace(/```json/gi, '').replace(/```/g, '').trim();
+            // Validate it's parseable
+            const parsed = JSON.parse(cleanJson);
+            if (typeof parsed === 'object' && !Array.isArray(parsed)) {
+              rawContent = JSON.stringify(parsed, null, 2); // format it nicely
+            }
+          } catch (e) {
+            console.warn('[AI Orchestrator] Warning: code-generator did not output valid JSON. Proceeding anyway but WebContainer mounting may fail.');
+          }
+        }
+        
+        finalResult = rawContent;
         totalPromptTokens += response.usage.promptTokens;
         totalCompletionTokens += response.usage.completionTokens;
 

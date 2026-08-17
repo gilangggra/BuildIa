@@ -38,7 +38,7 @@ export function useWebContainer(viewMode: 'code' | 'preview' | 'terminal', activ
             xtermRef.current?.writeln('WebContainer booted! Generating project files...');
             
             // Provide a basic Vite React template
-            const files = [
+            let files = [
               { name: 'package.json', content: JSON.stringify({
                 name: "preview", private: true, version: "0.0.0", type: "module",
                 scripts: { dev: "vite", build: "vite build" },
@@ -47,9 +47,25 @@ export function useWebContainer(viewMode: 'code' | 'preview' | 'terminal', activ
               }, null, 2)},
               { name: 'index.html', content: `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Preview</title><script src="https://cdn.tailwindcss.com"></script></head><body><div id="root"></div><script type="module" src="/src/main.jsx"></script></body></html>` },
               { name: 'vite.config.js', content: `import { defineConfig } from 'vite'; import react from '@vitejs/plugin-react'; export default defineConfig({ plugins: [react()] });` },
-              { name: 'src/main.jsx', content: `import React from 'react'; import ReactDOM from 'react-dom/client'; import App from './App.jsx'; ReactDOM.createRoot(document.getElementById('root')).render(<App />);` },
-              { name: 'src/App.jsx', content: activeArtefact?.type === 'code' ? activeArtefact.content : `export default function App() { return <h1>Generated App</h1> }` }
+              { name: 'src/main.jsx', content: `import React from 'react'; import ReactDOM from 'react-dom/client'; import App from './App.jsx'; import './index.css'; ReactDOM.createRoot(document.getElementById('root')).render(<App />);` },
+              { name: 'src/index.css', content: `@tailwind base; @tailwind components; @tailwind utilities;` },
+              { name: 'src/App.jsx', content: `export default function App() { return <h1>Generated App</h1> }` }
             ];
+
+            if (activeArtefact?.type === 'code' && activeArtefact.content) {
+              try {
+                const parsedFiles = JSON.parse(activeArtefact.content);
+                // Merge AI generated files over the template
+                const aiFiles = Object.entries(parsedFiles).map(([path, content]) => ({ name: path, content: String(content) }));
+                
+                // Remove template files that the AI generated
+                files = files.filter(f => !aiFiles.find(af => af.name === f.name));
+                files = [...files, ...aiFiles];
+              } catch (e) {
+                // Fallback: single file
+                files = files.map(f => f.name === 'src/App.jsx' ? { ...f, content: activeArtefact.content } : f);
+              }
+            }
 
             await mountFiles(files);
             xtermRef.current?.writeln('Files mounted. Running npm install...');
@@ -79,11 +95,16 @@ export function useWebContainer(viewMode: 'code' | 'preview' | 'terminal', activ
           } else {
              // If WC is already ready, just sync the active artefact if it's code
              if (activeArtefact?.type === 'code') {
-                const files = [
-                  { name: 'src/App.jsx', content: activeArtefact.content }
-                ];
-                await mountFiles(files);
-                xtermRef.current?.writeln('\r\n[Sync] Updated src/App.jsx');
+                let filesToSync = [];
+                try {
+                  const parsedFiles = JSON.parse(activeArtefact.content);
+                  filesToSync = Object.entries(parsedFiles).map(([path, content]) => ({ name: path, content: String(content) }));
+                } catch (e) {
+                  filesToSync = [{ name: 'src/App.jsx', content: activeArtefact.content }];
+                }
+                
+                await mountFiles(filesToSync);
+                xtermRef.current?.writeln('\r\n[Sync] Updated files from artefact');
              }
           }
         } catch (err: any) {
@@ -112,11 +133,15 @@ export function useWebContainer(viewMode: 'code' | 'preview' | 'terminal', activ
   const syncCode = async (content: string) => {
     if (isWcReady && activeArtefact?.type === 'code') {
       try {
-        const files = [
-          { name: 'src/App.jsx', content }
-        ];
-        await mountFiles(files);
-        xtermRef.current?.writeln('\r\n[Sync] Updated src/App.jsx from Editor');
+        let filesToSync = [];
+        try {
+          const parsedFiles = JSON.parse(content);
+          filesToSync = Object.entries(parsedFiles).map(([path, fileContent]) => ({ name: path, content: String(fileContent) }));
+        } catch (e) {
+          filesToSync = [{ name: 'src/App.jsx', content }];
+        }
+        await mountFiles(filesToSync);
+        xtermRef.current?.writeln('\r\n[Sync] Updated files from Editor');
       } catch (err: any) {
         xtermRef.current?.writeln(`\r\n[Sync Error]: ${err.message}`);
       }

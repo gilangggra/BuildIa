@@ -618,7 +618,7 @@ export default function ProjectDetailPage() {
                 <div className={`absolute inset-0 ${viewMode === 'code' ? 'block' : 'hidden'}`}>
                   <Editor
                     height="100%"
-                    language={activeArtefact.type === 'code' ? 'javascript' : activeArtefact.type === 'srs' ? 'markdown' : 'json'}
+                    language={activeArtefact.type === 'code' ? (editableContent.trim().startsWith('{') ? 'json' : 'javascript') : activeArtefact.type === 'srs' ? 'markdown' : 'json'}
                     theme="vs-dark"
                     value={editableContent}
                     onChange={(val) => {
