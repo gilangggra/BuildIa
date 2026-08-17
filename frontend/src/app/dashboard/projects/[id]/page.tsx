@@ -150,9 +150,25 @@ export default function ProjectDetailPage() {
         { event: '*', schema: 'public', table: 'artefacts', filter: `project_id=eq.${id}` },
         (payload) => {
           if (payload.eventType === 'INSERT') {
+            const newArt = payload.new as any;
             setArtefacts((prev) => {
-              if (prev.find(a => a.id === payload.new.id)) return prev;
-              return [payload.new, ...prev];
+              if (prev.find(a => a.id === newArt.id)) return prev;
+              return [newArt, ...prev];
+            });
+            
+            // Auto-advance magic build progress tracker
+            setMagicBuildProgress(prev => {
+              if (!prev || prev.status === 'done') return prev;
+              if (newArt.type === 'srs') {
+                return { status: 'running', currentPhase: 2, message: 'Generating Architecture Diagram...' };
+              } else if (newArt.type === 'diagram') {
+                return { status: 'running', currentPhase: 3, message: 'Writing Backend & Frontend Code...' };
+              } else if (newArt.type === 'code') {
+                // Auto-hide after 5 seconds
+                setTimeout(() => setMagicBuildProgress(null), 5000);
+                return { status: 'done', currentPhase: 4, message: 'Magic Build Complete! You can preview the code now.' };
+              }
+              return prev;
             });
           } else if (payload.eventType === 'UPDATE') {
             setArtefacts((prev) => 
@@ -334,11 +350,14 @@ export default function ProjectDetailPage() {
     try {
       setIsMagicBuilding(true);
       setError("");
+      setMagicBuildProgress({ status: 'running', currentPhase: 1, message: 'Analyzing requirements and drafting SRS...' });
       await api.artefacts.magicBuild(id as string, magicBuildPrompt);
       setShowMagicBuildModal(false);
       setMagicBuildPrompt("");
     } catch (err: any) {
       setError(err.message || "Magic Build failed.");
+      setMagicBuildProgress(null);
+    } finally {
       setIsMagicBuilding(false);
     }
   };
@@ -378,9 +397,24 @@ export default function ProjectDetailPage() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#FAF9F6] p-6 pb-24 relative overflow-hidden font-sans">
+    <div className="flex flex-col h-full bg-[#f7f3ee] p-6 pb-24 relative overflow-hidden font-sans">
       {/* Background Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-[#181818]/10/60 blur-[100px] rounded-full pointer-events-none"></div>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-[#181818]/10 blur-[100px] rounded-full pointer-events-none"></div>
+
+      {/* Floating Magic Build Progress */}
+      {magicBuildProgress && (
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-[#181818] text-[#f7f3ee] px-6 py-4 rounded-[12px] shadow-[0_8px_30px_rgba(24,24,24,0.12)] flex items-center gap-4 z-50 border border-[#181818]/30">
+          {magicBuildProgress.status === 'running' ? (
+            <Loader2 className="h-6 w-6 animate-spin text-[#f7f3ee]/80" />
+          ) : (
+            <CheckCircle2 className="h-6 w-6 text-emerald-400" />
+          )}
+          <div>
+            <p className="text-[15px] font-semibold">Magic Build: Phase {magicBuildProgress.currentPhase}/4</p>
+            <p className="text-[13px] text-[#f7f3ee]/70 mt-0.5">{magicBuildProgress.message}</p>
+          </div>
+        </div>
+      )}
 
       {/* Page Header */}
       <div className="flex items-center justify-between mb-6 relative z-10">
