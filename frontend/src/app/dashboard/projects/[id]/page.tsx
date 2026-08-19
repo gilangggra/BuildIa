@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft, FileText, Code2, GitBranch, Rocket,
   TestTube, Sparkles, Send, Loader2, ChevronDown,
-  Clock, CheckCircle2, FileCode2, AlertCircle, XCircle, Check, Zap, Bot, Plus, Wand2, X, Play, ArrowUp, Paperclip, LayoutDashboard, Terminal as TerminalIcon, RefreshCw, Brain, ShoppingCart, Blocks, Settings, Save} from "lucide-react";
+  Clock, CheckCircle2, FileCode2, AlertCircle, XCircle, Check, Zap, Bot, Plus, Wand2, X, Play, ArrowUp, Paperclip, LayoutDashboard, Terminal as TerminalIcon, RefreshCw, Brain, ShoppingCart, Blocks, Settings, Save, Database, FolderOpen} from "lucide-react";
 import ReactDiffViewer from "react-diff-viewer-continued";
 import Editor from "@monaco-editor/react";
 import { api } from "@/lib/api";
@@ -87,9 +87,14 @@ export default function ProjectDetailPage() {
   const [editableContent, setEditableContent] = useState<string>("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [savingCode, setSavingCode] = useState(false);
+  
+  // Multi-File Explorer State
+  const [explorerTab, setExplorerTab] = useState<'artefacts' | 'files'>('artefacts');
+  const [parsedFiles, setParsedFiles] = useState<Record<string, string>>({});
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
 
   // WebContainer Hook
-  const { terminalRef, previewUrl, isWcReady, restartEnvironment, syncCode } = useWebContainer(viewMode, activeArtefact);
+  const { terminalRef, previewUrl, isWcReady, restartEnvironment, syncCode, bootStatus } = useWebContainer(viewMode, activeArtefact);
 
   // Refactor State
   const [showRefactorModal, setShowRefactorModal] = useState(false);
@@ -187,22 +192,58 @@ export default function ProjectDetailPage() {
 
   useEffect(() => {
     if (activeArtefact) {
-      setEditableContent(activeArtefact.content || "");
+      if (activeArtefact.type === 'code') {
+        try {
+          const files = JSON.parse(activeArtefact.content || "{}");
+          setParsedFiles(files);
+          const firstFile = Object.keys(files)[0];
+          setSelectedFile(firstFile || null);
+          setEditableContent(firstFile ? files[firstFile] : "");
+          setExplorerTab('files'); // Auto switch to files tab when code is selected
+        } catch (e) {
+          // Fallback to raw string
+          setParsedFiles({});
+          setSelectedFile(null);
+          setEditableContent(activeArtefact.content || "");
+        }
+      } else {
+        setParsedFiles({});
+        setSelectedFile(null);
+        setEditableContent(activeArtefact.content || "");
+      }
       setHasUnsavedChanges(false);
     }
   }, [activeArtefact]);
+
+  const handleSelectFile = (fileName: string) => {
+    if (hasUnsavedChanges && selectedFile) {
+      // Auto-save into parsedFiles memory before switching (but don't save to DB yet)
+      setParsedFiles(prev => ({ ...prev, [selectedFile]: editableContent }));
+    }
+    setSelectedFile(fileName);
+    setEditableContent(parsedFiles[fileName] || "");
+    setHasUnsavedChanges(false);
+  };
 
   const handleSaveArtefact = async () => {
     if (!activeArtefact || !hasUnsavedChanges) return;
     setSavingCode(true);
     try {
-      const updated = await api.artefacts.update(id as string, activeArtefact.id, { content: editableContent });
+      let contentToSave = editableContent;
+      
+      if (activeArtefact.type === 'code' && selectedFile) {
+        const newFiles = { ...parsedFiles, [selectedFile]: editableContent };
+        setParsedFiles(newFiles);
+        contentToSave = JSON.stringify(newFiles, null, 2);
+      }
+
+      const updated = await api.artefacts.update(id as string, activeArtefact.id, { content: contentToSave });
       setArtefacts(prev => prev.map(a => a.id === updated.id ? updated : a));
       setActiveArtefact(updated);
       setHasUnsavedChanges(false);
       // Sync to WC if it's code
       if (activeArtefact.type === 'code') {
-        syncCode(editableContent);
+        syncCode(contentToSave);
       }
     } catch (err: any) {
       setError(err.message || "Failed to save changes.");
@@ -384,15 +425,15 @@ export default function ProjectDetailPage() {
 
       {/* Floating Magic Build Progress */}
       {magicBuildProgress && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-[#181818] text-[#f7f3ee] px-6 py-4 rounded-[12px] shadow-[0_8px_30px_rgba(24,24,24,0.12)] flex items-center gap-4 z-50 border border-[#181818]/30">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-white text-[#181818] px-6 py-4 rounded-[12px] shadow-[0_8px_30px_rgba(24,24,24,0.08)] flex items-center gap-4 z-50 border border-[#181818]/10">
           {magicBuildProgress.status === 'running' ? (
-            <Loader2 className="h-6 w-6 animate-spin text-[#f7f3ee]/80" />
+            <Loader2 className="h-6 w-6 animate-spin text-[#181818]/60" />
           ) : (
-            <CheckCircle2 className="h-6 w-6 text-emerald-400" />
+            <CheckCircle2 className="h-6 w-6 text-emerald-500" />
           )}
           <div>
             <p className="text-[15px] font-semibold">Magic Build: Phase {magicBuildProgress.currentPhase}/4</p>
-            <p className="text-[13px] text-[#f7f3ee]/70 mt-0.5">{magicBuildProgress.message}</p>
+            <p className="text-[13px] text-[#181818]/60 mt-0.5">{magicBuildProgress.message}</p>
           </div>
         </div>
       )}
@@ -453,58 +494,97 @@ export default function ProjectDetailPage() {
 
       <div className="flex gap-4 flex-1 min-h-0 relative z-10 -mx-6 px-6">
         {/* FAR LEFT: IDE Activity Bar */}
-        <div className="w-14 flex-shrink-0 flex flex-col items-center gap-6 py-4 bg-[#f7f3ee] border border-[#181818]/20 rounded-[12px] shadow-sm">
-          <button className="p-2 text-[#181818] bg-[#181818]/10/50 rounded-[8px] relative group">
-            <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#181818] rounded-r-full" />
-            <FileText className="h-5 w-5" />
+        <div className="w-14 flex-shrink-0 flex flex-col items-center gap-6 py-4 bg-white border border-[#181818]/20 rounded-[12px] shadow-sm">
+          <button 
+            onClick={() => setExplorerTab('artefacts')}
+            title="Library (Artefacts)"
+            className={`p-2 rounded-[8px] relative group transition-colors ${explorerTab === 'artefacts' ? 'text-[#181818] bg-[#181818]/5 border border-[#181818]/10 shadow-sm' : 'text-[#181818]/40 hover:text-[#181818]/70'}`}
+          >
+            {explorerTab === 'artefacts' && <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#181818] rounded-r-full" />}
+            <Database className="h-5 w-5" />
           </button>
-          <button className="p-2 text-[#181818]/40 hover:text-[#181818]/70 transition-colors">
-            <GitBranch className="h-5 w-5" />
+          <button 
+            onClick={() => setExplorerTab('files')}
+            title="Explorer (Files)"
+            className={`p-2 rounded-[8px] relative group transition-colors ${explorerTab === 'files' ? 'text-[#181818] bg-[#181818]/5 border border-[#181818]/10 shadow-sm' : 'text-[#181818]/40 hover:text-[#181818]/70'}`}
+          >
+            {explorerTab === 'files' && <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#181818] rounded-r-full" />}
+            <FolderOpen className="h-5 w-5" />
           </button>
-          <button className="p-2 text-[#181818]/40 hover:text-[#181818]/70 transition-colors">
-            <Blocks className="h-5 w-5" />
-          </button>
-          <button className="p-2 text-[#181818]/40 hover:text-[#181818]/70 transition-colors mt-auto">
+          <button className="p-2 text-[#181818]/40 hover:text-[#181818]/70 transition-colors mt-auto" title="Settings">
             <Settings className="h-5 w-5" />
           </button>
         </div>
 
         {/* LEFT: Artefacts List (Explorer) */}
-        <div className="w-56 flex-shrink-0 flex flex-col gap-3 py-2 bg-[#f7f3ee] border border-[#181818]/20 rounded-[12px] shadow-sm overflow-hidden">
+        <div className="w-56 flex-shrink-0 flex flex-col gap-3 py-2 bg-white border border-[#181818]/20 rounded-[12px] shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-4 pt-4 pb-2 border-b border-[#181818]/20">
             <p className="text-xs font-bold text-[#181818]/60 tracking-wider">
-              EXPLORER
+              {explorerTab === 'artefacts' ? 'LIBRARY' : 'EXPLORER'}
             </p>
           </div>
-          {artefacts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center mx-4">
-              <FileText className="h-5 w-5 text-[#181818]/40 mb-2" />
-              <p className="text-[11px] text-[#181818]/60 font-medium">No artefacts yet.</p>
-            </div>
+          {explorerTab === 'artefacts' ? (
+            artefacts.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center mx-4">
+                <FileText className="h-5 w-5 text-[#181818]/40 mb-2" />
+                <p className="text-[11px] text-[#181818]/60 font-medium">No artefacts yet.</p>
+              </div>
+            ) : (
+              <div className="space-y-1 overflow-y-auto px-2 custom-scrollbar pb-2">
+                {artefacts.map((art) => {
+                  const Icon = typeIcon[art.type] ?? FileText;
+                  const isActive = activeArtefact?.id === art.id;
+                  return (
+                    <button
+                      key={art.id}
+                      onClick={() => setActiveArtefact(art)}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-left transition-all
+                        ${isActive
+                          ? "bg-[#181818]/10 text-[#181818] shadow-sm"
+                          : "bg-transparent hover:bg-[#181818]/5 text-[#181818]/70"
+                        }`}
+                    >
+                      <Icon className={`h-3.5 w-3.5 flex-shrink-0 transition-colors ${isActive ? "text-[#181818]" : "text-[#181818]/40"}`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-semibold truncate">
+                          {art.name}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )
           ) : (
             <div className="space-y-1 overflow-y-auto px-2 custom-scrollbar pb-2">
-              {artefacts.map((art) => {
-                const Icon = typeIcon[art.type] ?? FileText;
-                const isActive = activeArtefact?.id === art.id;
-                return (
-                  <button
-                    key={art.id}
-                    onClick={() => setActiveArtefact(art)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-left transition-all
-                      ${isActive
-                        ? "bg-[#181818]/10 text-[#181818] shadow-sm"
-                        : "bg-transparent hover:bg-[#181818]/5 text-[#181818]/70"
-                      }`}
-                  >
-                    <Icon className={`h-3.5 w-3.5 flex-shrink-0 transition-colors ${isActive ? "text-[#181818]" : "text-[#181818]/40"}`} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-semibold truncate">
-                        {art.name}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
+              {Object.keys(parsedFiles).length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-center mx-4">
+                  <FolderOpen className="h-5 w-5 text-[#181818]/40 mb-2" />
+                  <p className="text-[11px] text-[#181818]/60 font-medium leading-relaxed">Select a multi-file code artefact to view files.</p>
+                </div>
+              ) : (
+                Object.keys(parsedFiles).map((fileName) => {
+                  const isActive = selectedFile === fileName;
+                  return (
+                    <button
+                      key={fileName}
+                      onClick={() => handleSelectFile(fileName)}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-left transition-all
+                        ${isActive
+                          ? "bg-[#181818]/10 text-[#181818] shadow-sm"
+                          : "bg-transparent hover:bg-[#181818]/5 text-[#181818]/70"
+                        }`}
+                    >
+                      <FileCode2 className={`h-3.5 w-3.5 flex-shrink-0 transition-colors ${isActive ? "text-[#181818]" : "text-[#181818]/40"}`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-semibold truncate">
+                          {fileName.split('/').pop()}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })
+              )}
             </div>
           )}
         </div>
@@ -625,8 +705,8 @@ export default function ProjectDetailPage() {
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center bg-[#f7f3ee] text-[#181818]/60">
                        <Loader2 className="h-8 w-8 animate-spin mb-4 text-[#181818]" />
-                       <p className="font-bold text-[#181818]/90">Booting Environment...</p>
-                       <p className="text-sm mt-2 font-medium">Open the Terminal tab to view logs.</p>
+                       <p className="font-bold text-[#181818]/90">{bootStatus}</p>
+                       <p className="text-sm mt-2 font-medium">Open the Terminal tab to view detailed logs.</p>
                     </div>
                   )}
                 </div>

@@ -9,6 +9,7 @@ export function useWebContainer(viewMode: 'code' | 'preview' | 'terminal', activ
   const xtermRef = useRef<Terminal | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [isWcReady, setIsWcReady] = useState(false);
+  const [bootStatus, setBootStatus] = useState<string>('Booting WebContainer...');
 
   useEffect(() => {
     let fitAddon: FitAddon | null = null;
@@ -68,18 +69,21 @@ export function useWebContainer(viewMode: 'code' | 'preview' | 'terminal', activ
             }
 
             await mountFiles(files);
+            setBootStatus('Installing dependencies (this may take a moment)...');
             xtermRef.current?.writeln('Files mounted. Running npm install...');
             
-            const installProcess = await wc.spawn('npm', ['install']);
+            const installProcess = await wc.spawn('npm', ['install', '--no-audit', '--no-fund', '--legacy-peer-deps']);
             installProcess.output.pipeTo(new WritableStream({
               write(data) { xtermRef.current?.write(data); }
             }));
             
             if (await installProcess.exit !== 0) {
               xtermRef.current?.writeln('\r\nError installing dependencies.');
+              setBootStatus('Error installing dependencies. Check terminal.');
               return;
             }
 
+            setBootStatus('Starting dev server...');
             xtermRef.current?.writeln('\r\nStarting dev server...');
             const devProcess = await wc.spawn('npm', ['run', 'dev']);
             devProcess.output.pipeTo(new WritableStream({
@@ -128,6 +132,7 @@ export function useWebContainer(viewMode: 'code' | 'preview' | 'terminal', activ
     teardownWebContainer();
     setIsWcReady(false);
     setPreviewUrl('');
+    setBootStatus('Rebooting environment...');
   };
 
   const syncCode = async (content: string) => {
@@ -148,5 +153,5 @@ export function useWebContainer(viewMode: 'code' | 'preview' | 'terminal', activ
     }
   };
 
-  return { terminalRef, previewUrl, isWcReady, restartEnvironment, syncCode };
+  return { terminalRef, previewUrl, isWcReady, restartEnvironment, syncCode, bootStatus };
 }

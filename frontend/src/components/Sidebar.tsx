@@ -46,11 +46,11 @@ export default function Sidebar() {
               href={href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-[8px] transition-all font-medium text-[15px] group ${
                 isActive
-                  ? "bg-[#181818] text-[#f7f3ee]"
+                  ? "bg-white text-[#181818] border border-[#181818]/10 shadow-[0_2px_8px_rgba(24,24,24,0.04)]"
                   : "text-[#181818]/70 hover:text-[#181818] hover:bg-black/5"
               }`}
             >
-              <Icon className={`h-[18px] w-[18px] ${isActive ? "text-[#f7f3ee]" : "text-[#181818]/50 group-hover:text-[#181818]"}`} />
+              <Icon className={`h-[18px] w-[18px] ${isActive ? "text-[#181818]" : "text-[#181818]/50 group-hover:text-[#181818]"}`} />
               {label}
             </Link>
           );

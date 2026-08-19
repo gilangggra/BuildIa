@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, ArrowRight, Activity, FolderGit2, Clock, Loader2, Sparkles, MoreHorizontal, GitBranch } from "lucide-react";
+import { Plus, ArrowRight, Activity, FolderGit2, Clock, Loader2, Sparkles, MoreHorizontal, GitBranch, X, Code2 } from "lucide-react";
 import { api } from "@/lib/api";
 
 export default function DashboardOverview() {
@@ -24,14 +24,25 @@ export default function DashboardOverview() {
     return () => { mounted = false; };
   }, []);
 
-  const createProject = async () => {
+  const [showModal, setShowModal] = useState(false);
+  const [newProject, setNewProject] = useState({ name: "", description: "" });
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleCreateProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newProject.name) return;
     try {
-      const name = prompt("Project Name:", "New Project");
-      if (!name) return;
-      const res = await api.projects.create({ name, description: "A new AI-generated project" });
+      setCreating(true);
+      setError("");
+      const res = await api.projects.create({ 
+        name: newProject.name, 
+        description: newProject.description || "A new AI-generated project" 
+      });
       router.push(`/dashboard/projects/${res.id}`);
-    } catch (e: any) {
-      alert("Failed to create project: " + e.message);
+    } catch (err: any) {
+      setError("Failed to create project: " + err.message);
+      setCreating(false);
     }
   };
 
@@ -53,7 +64,7 @@ export default function DashboardOverview() {
             </div>
           </div>
           <button
-            onClick={createProject}
+            onClick={() => setShowModal(true)}
             className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[#181818] hover:bg-[#2a2a2a] text-[#f7f3ee] font-semibold rounded-[6px] transition-all shadow-[0_2px_8px_rgba(24,24,24,0.12)] text-[14px]"
           >
             <Plus className="h-4 w-4" />
@@ -94,7 +105,7 @@ export default function DashboardOverview() {
                 You haven't created any projects yet. Start by creating a new workspace.
               </p>
               <button
-                onClick={createProject}
+                onClick={() => setShowModal(true)}
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#181818] hover:bg-[#2a2a2a] text-[#f7f3ee] font-medium rounded-[6px] transition-all shadow-sm text-[14px]"
               >
                 <Plus className="h-4 w-4" />
@@ -148,6 +159,79 @@ export default function DashboardOverview() {
           )}
         </div>
       </div>
+
+      {/* Create Project Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#181818]/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-lg rounded-[16px] shadow-[0_20px_60px_rgba(24,24,24,0.15)] border border-[#181818]/10 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#181818]/10 bg-[#f7f3ee]">
+              <h2 className="text-[16px] font-bold text-[#181818] flex items-center gap-2">
+                <FolderGit2 className="h-4 w-4" /> Create New Project
+              </h2>
+              <button 
+                onClick={() => setShowModal(false)}
+                className="text-[#181818]/40 hover:text-[#181818] transition-colors p-1"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleCreateProject} className="p-6 overflow-y-auto custom-scrollbar flex-1">
+              {error && (
+                <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-600 rounded-[8px] text-[13px] font-medium">
+                  {error}
+                </div>
+              )}
+              
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-[13px] font-semibold text-[#181818] mb-1.5">Project Name</label>
+                  <input 
+                    type="text" 
+                    required
+                    autoFocus
+                    value={newProject.name}
+                    onChange={(e) => setNewProject({...newProject, name: e.target.value})}
+                    placeholder="e.g. NextJS E-Commerce" 
+                    className="w-full bg-white border border-[#181818]/20 focus:border-[#181818] focus:ring-1 focus:ring-[#181818] rounded-[8px] px-3.5 py-2.5 outline-none transition-all placeholder:text-[#181818]/30 font-medium text-[14px]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[13px] font-semibold text-[#181818] mb-1.5">Description (Optional)</label>
+                  <textarea 
+                    value={newProject.description}
+                    onChange={(e) => setNewProject({...newProject, description: e.target.value})}
+                    placeholder="e.g. A fullstack marketplace with Stripe payments..." 
+                    rows={3}
+                    className="w-full resize-none bg-white border border-[#181818]/20 focus:border-[#181818] focus:ring-1 focus:ring-[#181818] rounded-[8px] px-3.5 py-2.5 outline-none transition-all placeholder:text-[#181818]/30 font-medium text-[14px]"
+                  />
+                </div>
+              </div>
+            </form>
+
+            <div className="p-4 border-t border-[#181818]/10 bg-[#f7f3ee]/50 flex justify-end gap-3">
+              <button 
+                type="button"
+                onClick={() => setShowModal(false)}
+                disabled={creating}
+                className="px-4 py-2 font-semibold text-[#181818]/60 hover:bg-[#181818]/5 rounded-[6px] transition-colors text-[13px]"
+              >
+                Cancel
+              </button>
+              <button 
+                type="button"
+                onClick={handleCreateProject}
+                disabled={creating || !newProject.name}
+                className="flex items-center gap-2 px-5 py-2 bg-[#181818] hover:bg-[#2a2a2a] text-[#f7f3ee] font-semibold rounded-[6px] transition-colors text-[13px] shadow-sm disabled:opacity-50"
+              >
+                {creating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Code2 className="h-3.5 w-3.5" />}
+                Create Project
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

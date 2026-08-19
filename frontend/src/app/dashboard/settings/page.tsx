@@ -63,12 +63,12 @@ export default function SettingsPage() {
         <form onSubmit={handleSave} className="space-y-8">
           
           {/* Account Details Section */}
-          <div className="bg-[#f7f3ee] border border-[#181818]/20 rounded-[12px] p-8">
+          <div className="bg-white border border-[#181818]/10 rounded-[12px] p-8 shadow-sm">
             <h2 className="text-[17px] font-semibold flex items-center gap-2.5 mb-6">
               <User className="h-5 w-5" /> Account Profile
             </h2>
             
-            <div className="flex items-center gap-5 p-5 bg-white border border-[#181818]/10 rounded-[8px]">
+            <div className="flex items-center gap-5 p-5 bg-[#f7f3ee]/50 border border-[#181818]/10 rounded-[8px]">
               <div className="w-14 h-14 rounded-full bg-[#181818] flex items-center justify-center flex-shrink-0 shadow-sm">
                 <span className="text-xl font-medium text-white">U</span>
               </div>
@@ -83,7 +83,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Integrations Section */}
-          <div className="bg-[#f7f3ee] border border-[#181818]/20 rounded-[12px] p-8">
+          <div className="bg-white border border-[#181818]/10 rounded-[12px] p-8 shadow-sm">
             <h2 className="text-[17px] font-semibold flex items-center gap-2.5 mb-6">
               <GitBranch className="h-5 w-5" /> Version Control
             </h2>
