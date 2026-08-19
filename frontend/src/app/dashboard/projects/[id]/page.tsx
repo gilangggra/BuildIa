@@ -378,21 +378,21 @@ export default function ProjectDetailPage() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-zinc-950 p-6 pb-24 relative overflow-hidden font-sans">
+    <div className="flex flex-col h-full bg-[#f7f3ee] p-6 pb-24 relative overflow-hidden font-sans">
       {/* Background Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-zinc-900/10 blur-[100px] rounded-full pointer-events-none"></div>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-[#181818]/10 blur-[100px] rounded-full pointer-events-none"></div>
 
       {/* Floating Magic Build Progress */}
       {magicBuildProgress && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-zinc-900 text-white px-6 py-4 rounded-[12px] shadow-[0_8px_30px_rgba(24,24,24,0.12)] flex items-center gap-4 z-50 border border-white/30">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-[#181818] text-[#f7f3ee] px-6 py-4 rounded-[12px] shadow-[0_8px_30px_rgba(24,24,24,0.12)] flex items-center gap-4 z-50 border border-[#181818]/30">
           {magicBuildProgress.status === 'running' ? (
-            <Loader2 className="h-6 w-6 animate-spin text-white/80" />
+            <Loader2 className="h-6 w-6 animate-spin text-[#f7f3ee]/80" />
           ) : (
             <CheckCircle2 className="h-6 w-6 text-emerald-400" />
           )}
           <div>
             <p className="text-[15px] font-semibold">Magic Build: Phase {magicBuildProgress.currentPhase}/4</p>
-            <p className="text-[13px] text-white/70 mt-0.5">{magicBuildProgress.message}</p>
+            <p className="text-[13px] text-[#f7f3ee]/70 mt-0.5">{magicBuildProgress.message}</p>
           </div>
         </div>
       )}
@@ -402,12 +402,12 @@ export default function ProjectDetailPage() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push("/dashboard")}
-            className="p-2 bg-zinc-900 hover:bg-zinc-950 border border-white/20 rounded-[8px] transition-all shadow-sm text-white/60 hover:text-white/90"
+            className="p-2 bg-white hover:bg-[#f7f3ee] border border-[#181818]/20 rounded-[8px] transition-all shadow-sm text-[#181818]/60 hover:text-[#181818]/90"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
           <div>
-            <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+            <h1 className="text-xl font-bold text-[#181818] tracking-tight flex items-center gap-2">
               {project?.name ?? "Project"}
               {deployUrl && (
                 <a href={deployUrl} target="_blank" rel="noreferrer" className="text-xs px-2 py-0.5 bg-emerald-500/10 text-emerald-700 border border-emerald-100 rounded-full font-bold ml-2 hover:bg-emerald-100 transition-colors flex items-center gap-1 shadow-sm">
@@ -420,15 +420,15 @@ export default function ProjectDetailPage() {
                 </span>
               )}
             </h1>
-            <p className="text-sm text-white/60 mt-0.5 font-medium">{project?.description}</p>
+            <p className="text-sm text-[#181818]/60 mt-0.5 font-medium">{project?.description}</p>
           </div>
         </div>
         <div className="flex gap-3">
           <button
             onClick={() => setShowMagicBuildModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-sm font-bold rounded-[8px] transition-all shadow-md hover:-translate-y-0.5 relative group"
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-[#f7f3ee] text-sm font-bold rounded-[8px] transition-all shadow-md hover:-translate-y-0.5 relative group"
           >
-            <div className="absolute inset-0 bg-zinc-900/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity rounded-[8px] pointer-events-none" />
+            <div className="absolute inset-0 bg-white/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity rounded-[8px] pointer-events-none" />
             <Wand2 className="h-4 w-4 relative z-10" />
             <span className="relative z-10">Magic Build</span>
           </button>
@@ -436,7 +436,7 @@ export default function ProjectDetailPage() {
           <button
             onClick={handleDeploy}
             disabled={deploying}
-            className="flex items-center gap-2 px-4 py-2 bg-zinc-900 hover:bg-zinc-950 border border-white/20 text-white/80 text-sm font-bold rounded-[8px] transition-colors shadow-sm disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#f7f3ee] border border-[#181818]/20 text-[#181818]/80 text-sm font-bold rounded-[8px] transition-colors shadow-sm disabled:opacity-50"
           >
             {deploying ? <Loader2 className="h-4 w-4 animate-spin" /> : <GitBranch className="h-4 w-4" />}
             {deploying ? "Deploying..." : "Push to GitHub"}
@@ -453,33 +453,33 @@ export default function ProjectDetailPage() {
 
       <div className="flex gap-4 flex-1 min-h-0 relative z-10 -mx-6 px-6">
         {/* FAR LEFT: IDE Activity Bar */}
-        <div className="w-14 flex-shrink-0 flex flex-col items-center gap-6 py-4 bg-zinc-950 border border-white/20 rounded-[12px] shadow-sm">
-          <button className="p-2 text-white bg-zinc-900/10/50 rounded-[8px] relative group">
-            <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-8 bg-zinc-900 rounded-r-full" />
+        <div className="w-14 flex-shrink-0 flex flex-col items-center gap-6 py-4 bg-[#f7f3ee] border border-[#181818]/20 rounded-[12px] shadow-sm">
+          <button className="p-2 text-[#181818] bg-[#181818]/10/50 rounded-[8px] relative group">
+            <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#181818] rounded-r-full" />
             <FileText className="h-5 w-5" />
           </button>
-          <button className="p-2 text-white/40 hover:text-white/70 transition-colors">
+          <button className="p-2 text-[#181818]/40 hover:text-[#181818]/70 transition-colors">
             <GitBranch className="h-5 w-5" />
           </button>
-          <button className="p-2 text-white/40 hover:text-white/70 transition-colors">
+          <button className="p-2 text-[#181818]/40 hover:text-[#181818]/70 transition-colors">
             <Blocks className="h-5 w-5" />
           </button>
-          <button className="p-2 text-white/40 hover:text-white/70 transition-colors mt-auto">
+          <button className="p-2 text-[#181818]/40 hover:text-[#181818]/70 transition-colors mt-auto">
             <Settings className="h-5 w-5" />
           </button>
         </div>
 
         {/* LEFT: Artefacts List (Explorer) */}
-        <div className="w-56 flex-shrink-0 flex flex-col gap-3 py-2 bg-zinc-950 border border-white/20 rounded-[12px] shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between px-4 pt-4 pb-2 border-b border-white/20">
-            <p className="text-xs font-bold text-white/60 tracking-wider">
+        <div className="w-56 flex-shrink-0 flex flex-col gap-3 py-2 bg-[#f7f3ee] border border-[#181818]/20 rounded-[12px] shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-4 pt-4 pb-2 border-b border-[#181818]/20">
+            <p className="text-xs font-bold text-[#181818]/60 tracking-wider">
               EXPLORER
             </p>
           </div>
           {artefacts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-center mx-4">
-              <FileText className="h-5 w-5 text-white/40 mb-2" />
-              <p className="text-[11px] text-white/60 font-medium">No artefacts yet.</p>
+              <FileText className="h-5 w-5 text-[#181818]/40 mb-2" />
+              <p className="text-[11px] text-[#181818]/60 font-medium">No artefacts yet.</p>
             </div>
           ) : (
             <div className="space-y-1 overflow-y-auto px-2 custom-scrollbar pb-2">
@@ -492,11 +492,11 @@ export default function ProjectDetailPage() {
                     onClick={() => setActiveArtefact(art)}
                     className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-left transition-all
                       ${isActive
-                        ? "bg-zinc-900/10 text-white shadow-sm"
-                        : "bg-transparent hover:bg-zinc-900/5 text-white/70"
+                        ? "bg-[#181818]/10 text-[#181818] shadow-sm"
+                        : "bg-transparent hover:bg-[#181818]/5 text-[#181818]/70"
                       }`}
                   >
-                    <Icon className={`h-3.5 w-3.5 flex-shrink-0 transition-colors ${isActive ? "text-white" : "text-white/40"}`} />
+                    <Icon className={`h-3.5 w-3.5 flex-shrink-0 transition-colors ${isActive ? "text-[#181818]" : "text-[#181818]/40"}`} />
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-semibold truncate">
                         {art.name}
@@ -512,12 +512,12 @@ export default function ProjectDetailPage() {
         {/* RIGHT: Main Panel */}
         <div className="flex-1 flex flex-col min-w-0 pb-4">
           {activeArtefact ? (
-            <div className="flex-1 bg-zinc-900 border border-white/20 rounded-[12px] overflow-hidden flex flex-col shadow-sm relative">
+            <div className="flex-1 bg-white border border-[#181818]/20 rounded-[12px] overflow-hidden flex flex-col shadow-sm relative">
               
               {/* Fake Window Controls & Tabs */}
-              <div className="flex items-center justify-between px-4 bg-zinc-950 border-b border-white/20">
+              <div className="flex items-center justify-between px-4 bg-[#f7f3ee] border-b border-[#181818]/20">
                 <div className="flex items-center gap-4">
-                  <div className="flex gap-2 py-3 pr-4 border-r border-white/20">
+                  <div className="flex gap-2 py-3 pr-4 border-r border-[#181818]/20">
                     <div className="w-3 h-3 rounded-full bg-red-400"></div>
                     <div className="w-3 h-3 rounded-full bg-amber-400"></div>
                     <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
@@ -527,7 +527,7 @@ export default function ProjectDetailPage() {
                   <div className="flex pt-1">
                     <button 
                       onClick={() => setViewMode('code')}
-                      className={`px-4 py-2 text-xs font-bold flex items-center gap-2 border-b-2 transition-colors ${viewMode === 'code' ? 'text-white border-blue-600 bg-white' : 'text-white/60 border-transparent hover:text-white/80 hover:bg-zinc-900/5 rounded-t-lg'}`}
+                      className={`px-4 py-2 text-xs font-bold flex items-center gap-2 border-b-2 transition-colors ${viewMode === 'code' ? 'text-[#181818] border-blue-600 bg-white' : 'text-[#181818]/60 border-transparent hover:text-[#181818]/80 hover:bg-[#181818]/5 rounded-t-lg'}`}
                     >
                       <FileCode2 className="h-3.5 w-3.5" /> 
                       {activeArtefact?.name || "Code"}
@@ -535,14 +535,14 @@ export default function ProjectDetailPage() {
                     {(activeArtefact.type === 'code' || activeArtefact.type === 'diagram') && (
                       <button 
                         onClick={() => setViewMode('preview')}
-                        className={`px-4 py-2 text-xs font-bold flex items-center gap-2 border-b-2 transition-colors ${viewMode === 'preview' ? 'text-white border-blue-600 bg-white' : 'text-white/60 border-transparent hover:text-white/80 hover:bg-zinc-900/5 rounded-t-lg'}`}
+                        className={`px-4 py-2 text-xs font-bold flex items-center gap-2 border-b-2 transition-colors ${viewMode === 'preview' ? 'text-[#181818] border-blue-600 bg-white' : 'text-[#181818]/60 border-transparent hover:text-[#181818]/80 hover:bg-[#181818]/5 rounded-t-lg'}`}
                       >
                         <Play className="h-3.5 w-3.5" /> Preview
                       </button>
                     )}
                     <button 
                       onClick={() => setViewMode('terminal')}
-                      className={`px-4 py-2 text-xs font-bold flex items-center gap-2 border-b-2 transition-colors ${viewMode === 'terminal' ? 'text-white border-blue-600 bg-white' : 'text-white/60 border-transparent hover:text-white/80 hover:bg-zinc-900/5 rounded-t-lg'}`}
+                      className={`px-4 py-2 text-xs font-bold flex items-center gap-2 border-b-2 transition-colors ${viewMode === 'terminal' ? 'text-[#181818] border-blue-600 bg-white' : 'text-[#181818]/60 border-transparent hover:text-[#181818]/80 hover:bg-[#181818]/5 rounded-t-lg'}`}
                     >
                       <TerminalIcon className="h-3.5 w-3.5" /> Terminal
                     </button>
@@ -563,18 +563,18 @@ export default function ProjectDetailPage() {
 
                   <button 
                     onClick={restartEnvironment}
-                    className="px-2.5 py-1.5 hover:bg-slate-200 text-white/60 hover:text-white/90 rounded-lg transition-colors flex items-center gap-1.5"
+                    className="px-2.5 py-1.5 hover:bg-slate-200 text-[#181818]/60 hover:text-[#181818]/90 rounded-lg transition-colors flex items-center gap-1.5"
                     title="Restart Terminal & Dev Server"
                   >
                     <RefreshCw className="h-4 w-4" />
                   </button>
 
-                  <button onClick={() => setShowRefactorModal(true)} className="px-3 py-1.5 bg-zinc-900/5 hover:bg-zinc-900/10 border border-white/30 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm">
+                  <button onClick={() => setShowRefactorModal(true)} className="px-3 py-1.5 bg-[#181818]/5 hover:bg-[#181818]/10 border border-[#181818]/30 text-[#181818] rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm">
                     <Wand2 className="h-3.5 w-3.5" /> AI Refactor
                   </button>
 
                   {activeArtefact.status !== 'approved' && activeArtefact.status !== 'final' && (
-                    <div className="flex items-center gap-1.5 ml-2 border-l border-white/20 pl-3">
+                    <div className="flex items-center gap-1.5 ml-2 border-l border-[#181818]/20 pl-3">
                       <button 
                         onClick={() => handleStatusUpdate('rejected')}
                         className="flex items-center gap-1.5 px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-lg text-xs font-bold transition-all shadow-sm"
@@ -595,7 +595,7 @@ export default function ProjectDetailPage() {
               </div>
 
               {/* Editor / Preview Body */}
-              <div className="flex-1 relative overflow-hidden bg-zinc-900">
+              <div className="flex-1 relative overflow-hidden bg-white">
                 <div className={`absolute inset-0 ${viewMode === 'code' ? 'block' : 'hidden'}`}>
                   <Editor
                     height="100%"
@@ -614,7 +614,7 @@ export default function ProjectDetailPage() {
                   <div ref={terminalRef} className="w-full h-full p-4" />
                 </div>
                 
-                <div className={`absolute inset-0 bg-zinc-900 ${viewMode === 'preview' ? 'block' : 'hidden'}`}>
+                <div className={`absolute inset-0 bg-white ${viewMode === 'preview' ? 'block' : 'hidden'}`}>
                   {previewUrl ? (
                     <iframe
                       className="w-full h-full border-none"
@@ -623,9 +623,9 @@ export default function ProjectDetailPage() {
                       allow="cross-origin-isolated"
                     />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-950 text-white/60">
-                       <Loader2 className="h-8 w-8 animate-spin mb-4 text-white" />
-                       <p className="font-bold text-white/90">Booting Environment...</p>
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-[#f7f3ee] text-[#181818]/60">
+                       <Loader2 className="h-8 w-8 animate-spin mb-4 text-[#181818]" />
+                       <p className="font-bold text-[#181818]/90">Booting Environment...</p>
                        <p className="text-sm mt-2 font-medium">Open the Terminal tab to view logs.</p>
                     </div>
                   )}
@@ -633,13 +633,13 @@ export default function ProjectDetailPage() {
               </div>
             </div>
           ) : (
-            <div className="flex-1 bg-zinc-900 border border-white/20 rounded-[12px] flex items-center justify-center shadow-sm">
+            <div className="flex-1 bg-white border border-[#181818]/20 rounded-[12px] flex items-center justify-center shadow-sm">
               <div className="text-center">
-                <div className="w-16 h-16 bg-zinc-950 border border-white/10 rounded-[12px] flex items-center justify-center mx-auto mb-4">
-                  <LayoutDashboard className="h-8 w-8 text-white/40" />
+                <div className="w-16 h-16 bg-[#f7f3ee] border border-[#181818]/10 rounded-[12px] flex items-center justify-center mx-auto mb-4">
+                  <LayoutDashboard className="h-8 w-8 text-[#181818]/40" />
                 </div>
-                <p className="font-bold text-white/80">Select an artefact to view it</p>
-                <p className="text-sm text-white/60 mt-1 font-medium">Or generate a new one using the AI agent panel below.</p>
+                <p className="font-bold text-[#181818]/80">Select an artefact to view it</p>
+                <p className="text-sm text-[#181818]/60 mt-1 font-medium">Or generate a new one using the AI agent panel below.</p>
               </div>
             </div>
           )}
@@ -648,32 +648,32 @@ export default function ProjectDetailPage() {
 
       {/* Floating Pill Command Bar (Kapsul Melayang) */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-3xl z-40">
-        <form onSubmit={handleGenerate} className="bg-zinc-900/90 backdrop-blur-2xl rounded-full p-2 flex items-center shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-white/20">
+        <form onSubmit={handleGenerate} className="bg-white/90 backdrop-blur-2xl rounded-full p-2 flex items-center shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-[#181818]/20">
           
           {/* Subtle glowing orb inside the pill */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-full bg-zinc-900/10 blur-[30px] rounded-full pointer-events-none"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-full bg-[#181818]/10 blur-[30px] rounded-full pointer-events-none"></div>
           
           {/* Agent Selector Dropup */}
           <div className="relative">
             <button
               type="button"
               onClick={() => setShowAgentDropdown(!showAgentDropdown)}
-              className="flex items-center gap-2 pl-4 pr-3 py-2.5 rounded-full hover:bg-zinc-900/5 border-r border-white/20 transition-colors relative z-10"
+              className="flex items-center gap-2 pl-4 pr-3 py-2.5 rounded-full hover:bg-[#181818]/5 border-r border-[#181818]/20 transition-colors relative z-10"
             >
-              <div className="w-7 h-7 rounded-full bg-zinc-900/5 border border-white/20 flex items-center justify-center text-white">
+              <div className="w-7 h-7 rounded-full bg-[#181818]/5 border border-[#181818]/20 flex items-center justify-center text-[#181818]">
                 {selectedAgent && (() => {
                   const Icon = ICON_MAP[selectedAgent.icon_name] || Bot;
                   return <Icon className="h-4 w-4" />;
                 })()}
               </div>
               <span className="text-sm text-slate-200 font-medium whitespace-nowrap">{selectedAgent?.label || "Agent"}</span>
-              <ChevronDown className={`h-4 w-4 text-white/60 transition-transform ${showAgentDropdown ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`h-4 w-4 text-[#181818]/60 transition-transform ${showAgentDropdown ? 'rotate-180' : ''}`} />
             </button>
 
             {showAgentDropdown && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowAgentDropdown(false)} />
-                <div className="absolute bottom-full left-0 mb-3 w-56 bg-zinc-900 border border-white/20 rounded-[12px] shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
+                <div className="absolute bottom-full left-0 mb-3 w-56 bg-white border border-[#181818]/20 rounded-[12px] shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
                   <div className="p-1.5 flex flex-col gap-0.5">
                     {agents.map((agent) => {
                       const Icon = ICON_MAP[agent.icon_name] || Bot;
@@ -687,13 +687,13 @@ export default function ProjectDetailPage() {
                             setShowAgentDropdown(false);
                           }}
                           className={`flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-left transition-colors ${
-                            isSelected ? "bg-zinc-900/5 text-white" : "hover:bg-zinc-950 text-white/70 hover:text-white"
+                            isSelected ? "bg-[#181818]/5 text-[#181818]" : "hover:bg-[#f7f3ee] text-[#181818]/70 hover:text-[#181818]"
                           }`}
                         >
                           <Icon className="h-4 w-4" />
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-bold truncate">{agent.label}</p>
-                            <p className="text-[9px] font-medium truncate text-white/40">{agent.description}</p>
+                            <p className="text-[9px] font-medium truncate text-[#181818]/40">{agent.description}</p>
                           </div>
                         </button>
                       );
@@ -706,7 +706,7 @@ export default function ProjectDetailPage() {
           
           {/* Add Agent Button next to the picker */}
           <div className="flex gap-1 ml-1 mr-2 relative z-10">
-            <button type="button" onClick={() => setShowMarketplaceModal(true)} className="p-2 hover:bg-zinc-900/5 rounded-full text-white transition-colors" title="Agent Marketplace">
+            <button type="button" onClick={() => setShowMarketplaceModal(true)} className="p-2 hover:bg-[#181818]/5 rounded-full text-[#181818] transition-colors" title="Agent Marketplace">
               <ShoppingCart className="h-4 w-4" />
             </button>
           </div>
@@ -718,18 +718,18 @@ export default function ProjectDetailPage() {
             onChange={e => setPrompt(e.target.value)}
             placeholder={`Tell the ${selectedAgent?.label || 'agent'} what to do...`}
             disabled={generating}
-            className="flex-1 bg-transparent border-none focus:ring-0 text-white font-medium text-sm px-3 placeholder:text-white/40 outline-none disabled:opacity-50 relative z-10"
+            className="flex-1 bg-transparent border-none focus:ring-0 text-[#181818] font-medium text-sm px-3 placeholder:text-[#181818]/40 outline-none disabled:opacity-50 relative z-10"
           />
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2 pr-2 relative z-10">
-            <button type="button" className="p-2 rounded-full text-white/40 hover:text-white/70 hover:bg-zinc-900/5 transition-colors">
+            <button type="button" className="p-2 rounded-full text-[#181818]/40 hover:text-[#181818]/70 hover:bg-[#181818]/5 transition-colors">
               <Paperclip className="h-5 w-5" />
             </button>
             <button
               type="submit"
               disabled={generating || !prompt.trim()}
-              className="w-10 h-10 rounded-full bg-zinc-900 text-white flex items-center justify-center hover:bg-zinc-700 transition-all active:scale-95 shadow-md shadow-blue-500/20 disabled:opacity-50 disabled:active:scale-100"
+              className="w-10 h-10 rounded-full bg-[#181818] text-[#f7f3ee] flex items-center justify-center hover:bg-[#2a2a2a] transition-all active:scale-95 shadow-md shadow-blue-500/20 disabled:opacity-50 disabled:active:scale-100"
             >
               {generating ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowUp className="h-5 w-5" />}
             </button>
@@ -739,17 +739,17 @@ export default function ProjectDetailPage() {
 
       {/* Refactor Prompt Modal */}
       {showRefactorModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-zinc-900 border border-white/20 rounded-[12px] w-full max-w-lg shadow-[0_8px_30px_rgba(24,24,24,0.06)] overflow-hidden">
-            <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-[#181818]/20 rounded-[12px] w-full max-w-lg shadow-[0_8px_30px_rgba(24,24,24,0.06)] overflow-hidden">
+            <div className="px-6 py-5 border-b border-[#181818]/10 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Wand2 className="h-5 w-5 text-white" /> Refactor with AI
+                <h2 className="text-lg font-bold text-[#181818] flex items-center gap-2">
+                  <Wand2 className="h-5 w-5 text-[#181818]" /> Refactor with AI
                 </h2>
-                <p className="text-xs text-white/60 mt-1 font-medium">Tell the AI how to modify this artefact.</p>
+                <p className="text-xs text-[#181818]/60 mt-1 font-medium">Tell the AI how to modify this artefact.</p>
               </div>
-              <button onClick={() => setShowRefactorModal(false)} className="p-1.5 hover:bg-zinc-900/5 rounded-lg transition-colors">
-                <X className="h-5 w-5 text-white/40" />
+              <button onClick={() => setShowRefactorModal(false)} className="p-1.5 hover:bg-[#181818]/5 rounded-lg transition-colors">
+                <X className="h-5 w-5 text-[#181818]/40" />
               </button>
             </div>
             <form onSubmit={handleRefactorRequest} className="p-6 space-y-5">
@@ -758,13 +758,13 @@ export default function ProjectDetailPage() {
                 value={refactorPrompt}
                 onChange={e => setRefactorPrompt(e.target.value)}
                 placeholder="e.g. Can you convert this to use Tailwind CSS?"
-                className="w-full bg-zinc-950 border border-white/20 focus:bg-zinc-900 focus:border-white/20 focus:ring-1 focus:ring-[#181818] rounded-[8px] px-4 py-3 text-sm text-white placeholder-slate-400 font-medium outline-none transition-all resize-none"
+                className="w-full bg-[#f7f3ee] border border-[#181818]/20 focus:bg-white focus:border-[#181818] focus:ring-1 focus:ring-[#181818] rounded-[8px] px-4 py-3 text-sm text-[#181818] placeholder-slate-400 font-medium outline-none transition-all resize-none"
               />
               <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={() => setShowRefactorModal(false)} className="px-4 py-2 hover:bg-zinc-900/5 text-white/70 text-sm font-bold rounded-[8px] transition-colors">
+                <button type="button" onClick={() => setShowRefactorModal(false)} className="px-4 py-2 hover:bg-[#181818]/5 text-[#181818]/70 text-sm font-bold rounded-[8px] transition-colors">
                   Cancel
                 </button>
-                <button type="submit" disabled={isRefactoring || !refactorPrompt.trim()} className="flex items-center gap-2 px-5 py-2 bg-zinc-900 hover:bg-zinc-700 disabled:opacity-60 text-white text-sm font-bold rounded-[8px] transition-colors shadow-sm">
+                <button type="submit" disabled={isRefactoring || !refactorPrompt.trim()} className="flex items-center gap-2 px-5 py-2 bg-[#181818] hover:bg-[#2a2a2a] disabled:opacity-60 text-[#f7f3ee] text-sm font-bold rounded-[8px] transition-colors shadow-sm">
                   {isRefactoring ? <Loader2 className="h-4 w-4 animate-spin" /> : "Start Refactoring"}
                 </button>
               </div>
@@ -776,26 +776,26 @@ export default function ProjectDetailPage() {
       {/* Diff Viewer Modal */}
       {diffProposal && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-6">
-          <div className="bg-zinc-900 border border-white/20 rounded-[12px] w-full h-full max-h-[90vh] shadow-[0_8px_30px_rgba(24,24,24,0.06)] overflow-hidden flex flex-col">
-            <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-zinc-950">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                <GitBranch className="h-5 w-5 text-white" /> Review Changes
+          <div className="bg-white border border-[#181818]/20 rounded-[12px] w-full h-full max-h-[90vh] shadow-[0_8px_30px_rgba(24,24,24,0.06)] overflow-hidden flex flex-col">
+            <div className="px-6 py-4 border-b border-[#181818]/10 flex items-center justify-between bg-[#f7f3ee]">
+              <h2 className="text-lg font-bold text-[#181818] flex items-center gap-2">
+                <GitBranch className="h-5 w-5 text-[#181818]" /> Review Changes
               </h2>
               <div className="flex items-center gap-3">
-                <button onClick={() => setDiffProposal(null)} className="px-4 py-2 border border-white/20 hover:bg-zinc-900/5 text-white/70 text-sm font-bold rounded-[8px] transition-colors">
+                <button onClick={() => setDiffProposal(null)} className="px-4 py-2 border border-[#181818]/20 hover:bg-[#181818]/5 text-[#181818]/70 text-sm font-bold rounded-[8px] transition-colors">
                   Reject
                 </button>
-                <button onClick={handleAcceptRefactor} className="flex items-center gap-2 px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-[8px] transition-colors shadow-md shadow-emerald-600/20">
+                <button onClick={handleAcceptRefactor} className="flex items-center gap-2 px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-[#f7f3ee] text-sm font-bold rounded-[8px] transition-colors shadow-md shadow-emerald-600/20">
                   <Check className="h-4 w-4" /> Accept Changes
                 </button>
               </div>
             </div>
             <div className="flex-1 overflow-auto bg-[#1e1e1e] relative">
               {isRefining && (
-                <div className="absolute inset-0 z-10 bg-[#1e1e1e]/60 backdrop-blur-sm flex flex-col items-center justify-center text-white">
-                  <Loader2 className="h-10 w-10 animate-spin text-white/80 mb-4" />
+                <div className="absolute inset-0 z-10 bg-[#1e1e1e]/60 backdrop-blur-sm flex flex-col items-center justify-center text-[#f7f3ee]">
+                  <Loader2 className="h-10 w-10 animate-spin text-[#181818]/80 mb-4" />
                   <p className="font-semibold text-lg text-slate-200">Refining changes...</p>
-                  <p className="text-sm text-white/40 mt-2">Applying your feedback to the code.</p>
+                  <p className="text-sm text-[#181818]/40 mt-2">Applying your feedback to the code.</p>
                 </div>
               )}
               <ReactDiffViewer
@@ -810,7 +810,7 @@ export default function ProjectDetailPage() {
                 }}
               />
             </div>
-            <div className="px-6 py-4 border-t border-white/20 bg-zinc-950 flex flex-col gap-4">
+            <div className="px-6 py-4 border-t border-[#181818]/20 bg-[#f7f3ee] flex flex-col gap-4">
               <form onSubmit={handleRefineRequest} className="flex gap-3">
                 <input
                   type="text"
@@ -818,23 +818,23 @@ export default function ProjectDetailPage() {
                   onChange={e => setRefinePrompt(e.target.value)}
                   placeholder="Not quite right? Ask the AI to refine this code... (e.g., 'Make the button blue')"
                   disabled={isRefining}
-                  className="flex-1 bg-zinc-900 border border-white/20 focus:border-white/20 focus:ring-1 focus:ring-[#181818] rounded-[8px] px-4 py-2.5 text-sm font-medium text-white placeholder-slate-400 outline-none transition-all disabled:opacity-50"
+                  className="flex-1 bg-white border border-[#181818]/20 focus:border-[#181818] focus:ring-1 focus:ring-[#181818] rounded-[8px] px-4 py-2.5 text-sm font-medium text-[#181818] placeholder-slate-400 outline-none transition-all disabled:opacity-50"
                 />
                 <button 
                   type="submit" 
                   disabled={isRefining || !refinePrompt.trim()} 
-                  className="flex items-center justify-center gap-2 px-6 py-2.5 bg-zinc-900 hover:bg-zinc-700 disabled:opacity-50 text-white text-sm font-bold rounded-[8px] transition-colors min-w-[120px] shadow-sm shadow-blue-900/20"
+                  className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#181818] hover:bg-[#2a2a2a] disabled:opacity-50 text-[#f7f3ee] text-sm font-bold rounded-[8px] transition-colors min-w-[120px] shadow-sm shadow-blue-900/20"
                 >
                   {isRefining ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Sparkles className="h-4 w-4" /> Refine</>}
                 </button>
               </form>
               
               <div className="flex justify-between items-center">
-                <p className="text-xs font-medium text-white/60">You can iteratively refine this proposal or accept/reject it.</p>
+                <p className="text-xs font-medium text-[#181818]/60">You can iteratively refine this proposal or accept/reject it.</p>
                 {diffProposal.usage && (
-                  <div className="flex items-center gap-4 text-xs font-bold text-white/40">
+                  <div className="flex items-center gap-4 text-xs font-bold text-[#181818]/40">
                     <span className="flex items-center gap-1" title="Prompt Tokens"><ArrowUp className="h-3 w-3 text-emerald-500" /> {diffProposal.usage.promptTokens}</span>
-                    <span className="flex items-center gap-1" title="Completion Tokens"><ArrowLeft className="h-3 w-3 text-white/80" /> {diffProposal.usage.completionTokens}</span>
+                    <span className="flex items-center gap-1" title="Completion Tokens"><ArrowLeft className="h-3 w-3 text-[#181818]/80" /> {diffProposal.usage.completionTokens}</span>
                     <span className="flex items-center gap-1"><Zap className="h-3 w-3 text-amber-500" /> {diffProposal.usage.totalTokens} Total</span>
                   </div>
                 )}
@@ -848,45 +848,45 @@ export default function ProjectDetailPage() {
 
       {/* Marketplace Modal */}
       {showMarketplaceModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-zinc-900 border border-white/20 rounded-[12px] w-full max-w-2xl shadow-[0_8px_30px_rgba(24,24,24,0.06)] overflow-hidden flex flex-col max-h-[80vh]">
-            <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between bg-zinc-950">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-[#181818]/20 rounded-[12px] w-full max-w-2xl shadow-[0_8px_30px_rgba(24,24,24,0.06)] overflow-hidden flex flex-col max-h-[80vh]">
+            <div className="px-6 py-5 border-b border-[#181818]/10 flex items-center justify-between bg-[#f7f3ee]">
               <div>
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <ShoppingCart className="h-5 w-5 text-white" /> Agent Marketplace
+                <h2 className="text-lg font-bold text-[#181818] flex items-center gap-2">
+                  <ShoppingCart className="h-5 w-5 text-[#181818]" /> Agent Marketplace
                 </h2>
-                <p className="text-xs text-white/60 mt-1 font-medium">Discover and install specialized AI agents created by the community.</p>
+                <p className="text-xs text-[#181818]/60 mt-1 font-medium">Discover and install specialized AI agents created by the community.</p>
               </div>
               <button onClick={() => setShowMarketplaceModal(false)} className="p-1.5 hover:bg-slate-200 rounded-lg transition-colors">
-                <XCircle className="h-5 w-5 text-white/60" />
+                <XCircle className="h-5 w-5 text-[#181818]/60" />
               </button>
             </div>
-            <div className="p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4 bg-zinc-900">
+            <div className="p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4 bg-white">
               {PRE_MADE_AGENTS.map((agent, i) => {
                 const Icon = ICON_MAP[agent.icon_name] || Bot;
                 // check if already installed by label
                 const isInstalled = agents.some(a => a.label === agent.label);
                 return (
-                  <div key={i} className="bg-zinc-900 border border-white/20 rounded-[8px] p-4 flex flex-col transition-all hover:border-blue-300 hover:shadow-md">
+                  <div key={i} className="bg-white border border-[#181818]/20 rounded-[8px] p-4 flex flex-col transition-all hover:border-blue-300 hover:shadow-md">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-[8px] bg-zinc-900/5 flex items-center justify-center text-white border border-white/20">
+                        <div className="w-10 h-10 rounded-[8px] bg-[#181818]/5 flex items-center justify-center text-[#181818] border border-[#181818]/20">
                           <Icon className="h-5 w-5" />
                         </div>
                         <div>
-                          <h3 className="text-sm font-bold text-white">{agent.label}</h3>
-                          <p className="text-xs text-white/60 font-medium capitalize">{agent.type} agent</p>
+                          <h3 className="text-sm font-bold text-[#181818]">{agent.label}</h3>
+                          <p className="text-xs text-[#181818]/60 font-medium capitalize">{agent.type} agent</p>
                         </div>
                       </div>
                     </div>
-                    <p className="text-xs text-white/70 mb-5 flex-1 font-medium leading-relaxed">{agent.description}</p>
+                    <p className="text-xs text-[#181818]/70 mb-5 flex-1 font-medium leading-relaxed">{agent.description}</p>
                     <button 
                       onClick={() => handleInstallAgent(agent)}
                       disabled={isInstalled || installingAgentId === agent.label}
                       className={`w-full py-2.5 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 ${
                         isInstalled 
                           ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-200 cursor-not-allowed' 
-                          : 'bg-zinc-900 hover:bg-zinc-700 text-white shadow-sm hover:shadow-blue-900/20'
+                          : 'bg-[#181818] hover:bg-[#2a2a2a] text-[#f7f3ee] shadow-sm hover:shadow-blue-900/20'
                       }`}
                     >
                       {installingAgentId === agent.label ? <Loader2 className="h-4 w-4 animate-spin" /> : (
@@ -904,17 +904,17 @@ export default function ProjectDetailPage() {
       {/* Magic Build Modal */}
       {showMagicBuildModal && (
         <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-zinc-900 border border-white/20 rounded-[12px] w-full max-w-lg shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden relative">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[100px] bg-zinc-900/10 blur-[60px] pointer-events-none" />
-            <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between relative z-10 bg-zinc-950/50">
+          <div className="bg-white border border-[#181818]/20 rounded-[12px] w-full max-w-lg shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden relative">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[100px] bg-[#181818]/10 blur-[60px] pointer-events-none" />
+            <div className="px-6 py-5 border-b border-[#181818]/10 flex items-center justify-between relative z-10 bg-[#f7f3ee]/50">
               <div>
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Wand2 className="h-5 w-5 text-white" /> Magic Build
+                <h2 className="text-lg font-bold text-[#181818] flex items-center gap-2">
+                  <Wand2 className="h-5 w-5 text-[#181818]" /> Magic Build
                 </h2>
-                <p className="text-xs text-white/60 mt-1 font-medium">AI will automatically plan, architect, and code your app.</p>
+                <p className="text-xs text-[#181818]/60 mt-1 font-medium">AI will automatically plan, architect, and code your app.</p>
               </div>
               <button onClick={() => setShowMagicBuildModal(false)} className="p-1.5 hover:bg-slate-200 rounded-lg transition-colors">
-                <X className="h-5 w-5 text-white/40" />
+                <X className="h-5 w-5 text-[#181818]/40" />
               </button>
             </div>
             <form onSubmit={handleMagicBuild} className="p-6 space-y-5 relative z-10">
@@ -923,23 +923,40 @@ export default function ProjectDetailPage() {
                 value={magicBuildPrompt}
                 onChange={e => setMagicBuildPrompt(e.target.value)}
                 placeholder="Describe your app. E.g., 'A simple calculator app with a modern light theme and history log.'"
-                className="w-full bg-zinc-950 border border-white/20 focus:border-white/20 focus:ring-1 focus:ring-[#181818] rounded-[8px] px-4 py-3 text-sm font-medium text-white placeholder-slate-400 outline-none transition-all resize-none"
+                className="w-full bg-[#f7f3ee] border border-[#181818]/20 focus:border-[#181818] focus:ring-1 focus:ring-[#181818] rounded-[8px] px-4 py-3 text-sm font-medium text-[#181818] placeholder-slate-400 outline-none transition-all resize-none"
               />
               
+              {magicBuildProgress && (
+                <div className="p-4 bg-[#181818]/5 border border-[#181818]/20 rounded-[8px]">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-bold text-blue-900">Pipeline Progress</span>
+                    <span className="text-xs font-bold text-[#181818]">{magicBuildProgress.currentPhase} / 4</span>
+                  </div>
+                  <div className="w-full bg-[#181818]/10 h-2 rounded-full overflow-hidden">
+                    <div 
+                      className="bg-[#181818] h-full transition-all duration-500 ease-out"
+                      style={{ width: `${(magicBuildProgress.currentPhase / 4) * 100}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-[#181818] mt-2 font-medium flex items-center gap-2">
+                    {magicBuildProgress.status === 'running' ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+                    {magicBuildProgress.message}
+                  </p>
+                </div>
+              )}
 
-
-              <div className="flex justify-end gap-3 pt-2 border-t border-white/10 mt-4">
+              <div className="flex justify-end gap-3 pt-2 border-t border-[#181818]/10 mt-4">
                 <button 
                   type="button" 
                   onClick={() => setShowMagicBuildModal(false)} 
-                  className="px-4 py-2 hover:bg-zinc-900/5 text-white/70 text-sm font-bold rounded-[8px] transition-colors"
+                  className="px-4 py-2 hover:bg-[#181818]/5 text-[#181818]/70 text-sm font-bold rounded-[8px] transition-colors"
                 >
                   Close
                 </button>
                 <button 
                   type="submit" 
                   disabled={magicBuildProgress?.status === 'running' || !magicBuildPrompt.trim()} 
-                  className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-zinc-800 to-zinc-700 hover:from-[#2a2a2a] hover:to-[#3a3a3a] disabled:opacity-60 text-white text-sm font-bold rounded-[8px] transition-all shadow-md"
+                  className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-[#181818] to-[#2a2a2a] hover:from-[#2a2a2a] hover:to-[#3a3a3a] disabled:opacity-60 text-[#f7f3ee] text-sm font-bold rounded-[8px] transition-all shadow-md"
                 >
                   {magicBuildProgress?.status === 'running' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
                   {magicBuildProgress?.status === 'running' ? "Building..." : "Start Magic Build"}
@@ -949,42 +966,6 @@ export default function ProjectDetailPage() {
           </div>
         </div>
       )}
-
-      {/* Floating Magic Build Tracker */}
-      {magicBuildProgress && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-8 fade-in duration-500">
-          <div className="bg-zinc-900/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgba(24,24,24,0.12)] rounded-full px-6 py-3 flex items-center gap-4">
-            {magicBuildProgress.status === 'running' ? (
-              <div className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-              </div>
-            ) : (
-              <div className="h-3 w-3 rounded-full bg-zinc-900"></div>
-            )}
-            
-            <div className="flex flex-col">
-              <div className="flex items-center gap-3">
-                <span className="text-[13px] font-bold text-white">Magic Build Pipeline</span>
-                <span className="text-[11px] font-bold text-white/50 bg-zinc-900/5 px-2 py-0.5 rounded-full">
-                  Step {magicBuildProgress.currentPhase} of 4
-                </span>
-              </div>
-              <p className="text-[12px] text-white/70 font-medium flex items-center gap-1.5 mt-0.5">
-                {magicBuildProgress.message}
-              </p>
-            </div>
-            
-            <div className="ml-4 w-24 h-1.5 bg-zinc-900/10 rounded-full overflow-hidden">
-              <div 
-                className="bg-gradient-to-r from-emerald-400 to-emerald-600 h-full rounded-full transition-all duration-1000 ease-out"
-                style={{ width: `${(magicBuildProgress.currentPhase / 4) * 100}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }

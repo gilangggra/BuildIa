@@ -27,13 +27,13 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-60 h-screen bg-zinc-950/80 backdrop-blur-xl border-r border-white/10 flex flex-col fixed left-0 top-0 z-20 transition-all">
+    <aside className="w-60 h-screen bg-[#f7f3ee] border-r border-[#181818]/20 flex flex-col fixed left-0 top-0 z-20">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-6 py-6 border-b border-white/10 relative overflow-hidden cursor-pointer">
-        <div className="w-8 h-8 bg-white/10 rounded-[8px] flex items-center justify-center flex-shrink-0 border border-white/10 shadow-inner">
-          <Sparkles className="h-4 w-4 text-emerald-400" />
+      <div className="flex items-center gap-3 px-6 py-6 border-b border-[#181818]/10 relative overflow-hidden cursor-pointer">
+        <div className="w-8 h-8 bg-[#181818] rounded-[8px] flex items-center justify-center flex-shrink-0">
+          <Sparkles className="h-4 w-4 text-[#f7f3ee]" />
         </div>
-        <span className="font-semibold text-white text-[17px] tracking-[-0.03em]">BuildIA</span>
+        <span className="font-semibold text-[#181818] text-[17px] tracking-[-0.03em]">BuildIA</span>
       </div>
 
       {/* Nav */}
@@ -44,13 +44,13 @@ export default function Sidebar() {
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-[10px] transition-all duration-200 font-medium text-[14px] group ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-[8px] transition-all font-medium text-[15px] group ${
                 isActive
-                  ? "bg-white/10 text-white border border-white/5 shadow-sm"
-                  : "text-zinc-400 hover:text-white hover:bg-white/5"
+                  ? "bg-[#181818] text-[#f7f3ee]"
+                  : "text-[#181818]/70 hover:text-[#181818] hover:bg-black/5"
               }`}
             >
-              <Icon className={`h-[18px] w-[18px] transition-colors ${isActive ? "text-white" : "text-zinc-500 group-hover:text-zinc-300"}`} />
+              <Icon className={`h-[18px] w-[18px] ${isActive ? "text-[#f7f3ee]" : "text-[#181818]/50 group-hover:text-[#181818]"}`} />
               {label}
             </Link>
           );
@@ -58,20 +58,20 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer / Profile Pill */}
-      <div className="p-4 border-t border-white/10 bg-transparent">
-        <div className="flex items-center justify-between p-2.5 rounded-[12px] bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition-all group">
+      <div className="p-4 border-t border-[#181818]/10 bg-[#f7f3ee]">
+        <div className="flex items-center justify-between p-2.5 rounded-[8px] bg-white border border-[#181818]/20 hover:border-[#181818]/40 transition-colors group">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-zinc-800 to-zinc-600 flex items-center justify-center flex-shrink-0 shadow-inner">
-              <span className="text-[13px] font-bold text-white">U</span>
+            <div className="w-8 h-8 rounded-[6px] bg-[#181818] flex items-center justify-center flex-shrink-0">
+              <span className="text-[13px] font-medium text-[#f7f3ee]">U</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-[14px] font-semibold text-zinc-200">User</span>
-              <span className="text-[12px] text-zinc-500 font-medium leading-none mt-0.5">Free Plan</span>
+              <span className="text-[14px] font-semibold text-[#181818]">User</span>
+              <span className="text-[12px] text-[#181818]/60 font-medium leading-none mt-0.5">Free Plan</span>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="p-1.5 rounded-[6px] text-zinc-500 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-[6px] text-[#181818]/40 hover:text-[#181818] hover:bg-[#181818]/5 transition-colors"
             title="Sign Out"
           >
             <LogOut className="h-[18px] w-[18px]" />
