@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft, FileText, Code2, GitBranch, Rocket,
@@ -87,6 +87,7 @@ export default function ProjectDetailPage() {
   const [editableContent, setEditableContent] = useState<string>("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [savingCode, setSavingCode] = useState(false);
+  const [isDeletingArtefact, setIsDeletingArtefact] = useState<string | null>(null);
   
   // Multi-File Explorer State
   const [explorerTab, setExplorerTab] = useState<'artefacts' | 'files'>('artefacts');
@@ -225,7 +226,8 @@ export default function ProjectDetailPage() {
     setHasUnsavedChanges(false);
   };
 
-  const handleSaveArtefact = async () => {
+  // Wrap in useCallback so the keydown listener always has the latest closure
+  const handleSaveArtefact = useCallback(async () => {
     if (!activeArtefact || !hasUnsavedChanges) return;
     setSavingCode(true);
     try {
@@ -241,7 +243,6 @@ export default function ProjectDetailPage() {
       setArtefacts(prev => prev.map(a => a.id === updated.id ? updated : a));
       setActiveArtefact(updated);
       setHasUnsavedChanges(false);
-      // Sync to WC if it's code
       if (activeArtefact.type === 'code') {
         syncCode(contentToSave);
       }
@@ -250,7 +251,8 @@ export default function ProjectDetailPage() {
     } finally {
       setSavingCode(false);
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeArtefact, hasUnsavedChanges, editableContent, parsedFiles, selectedFile, id]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -261,10 +263,26 @@ export default function ProjectDetailPage() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [hasUnsavedChanges, editableContent, activeArtefact]);
+  // handleSaveArtefact is stable via useCallback
+  }, [handleSaveArtefact]);
 
 
 
+
+  const handleDeleteArtefact = async (artId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent selecting the artefact when clicking delete
+    if (!confirm('Delete this artefact? This cannot be undone.')) return;
+    try {
+      setIsDeletingArtefact(artId);
+      await api.artefacts.delete(id as string, artId);
+      setArtefacts(prev => prev.filter(a => a.id !== artId));
+      if (activeArtefact?.id === artId) setActiveArtefact(null);
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete artefact.');
+    } finally {
+      setIsDeletingArtefact(null);
+    }
+  };
 
   const handleInstallAgent = async (agentInfo: any) => {
     try {
@@ -273,7 +291,8 @@ export default function ProjectDetailPage() {
       const updatedAgents = await api.agents.list();
       setAgents(updatedAgents || []);
     } catch (err: any) {
-      alert("Failed to install agent: " + err.message);
+      // Use consistent error state instead of browser alert()
+      setError("Failed to install agent: " + err.message);
     } finally {
       setInstallingAgentId(null);
     }
@@ -387,13 +406,16 @@ export default function ProjectDetailPage() {
   const handleStatusUpdate = async (newStatus: string) => {
     if (!activeArtefact) return;
     try {
-      const updated = await api.artefacts.update(id as string, activeArtefact.id, { status: newStatus });
+      const updated = await api.artefacts.update(id as string, activeArtefact.id, {
+        status: newStatus as 'draft' | 'approved' | 'final' | 'rejected',
+      });
       setArtefacts(prev => prev.map(a => a.id === updated.id ? updated : a));
       setActiveArtefact(updated);
     } catch (err: any) {
       setError(err.message || "Failed to update status.");
     }
   };
+
 
   const handleDeploy = async () => {
     setDeploying(true);
@@ -534,11 +556,12 @@ export default function ProjectDetailPage() {
                 {artefacts.map((art) => {
                   const Icon = typeIcon[art.type] ?? FileText;
                   const isActive = activeArtefact?.id === art.id;
+                  const isDeleting = isDeletingArtefact === art.id;
                   return (
                     <button
                       key={art.id}
                       onClick={() => setActiveArtefact(art)}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-left transition-all
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-left transition-all group/art
                         ${isActive
                           ? "bg-[#181818]/10 text-[#181818] shadow-sm"
                           : "bg-transparent hover:bg-[#181818]/5 text-[#181818]/70"
@@ -550,6 +573,15 @@ export default function ProjectDetailPage() {
                           {art.name}
                         </p>
                       </div>
+                      {/* Delete button — visible on hover or when active */}
+                      <button
+                        onClick={(e) => handleDeleteArtefact(art.id, e)}
+                        disabled={isDeleting || art.status === 'approved' || art.status === 'final'}
+                        title={art.status === 'approved' || art.status === 'final' ? 'Cannot delete approved artefact' : 'Delete artefact'}
+                        className="opacity-0 group-hover/art:opacity-100 transition-opacity p-0.5 hover:text-red-500 text-[#181818]/40 disabled:opacity-20 disabled:cursor-not-allowed flex-shrink-0"
+                      >
+                        {isDeleting ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3" />}
+                      </button>
                     </button>
                   );
                 })}
@@ -746,7 +778,7 @@ export default function ProjectDetailPage() {
                   return <Icon className="h-4 w-4" />;
                 })()}
               </div>
-              <span className="text-sm text-slate-200 font-medium whitespace-nowrap">{selectedAgent?.label || "Agent"}</span>
+              <span className="text-sm text-[#181818]/80 font-medium whitespace-nowrap">{selectedAgent?.label || "Agent"}</span>
               <ChevronDown className={`h-4 w-4 text-[#181818]/60 transition-transform ${showAgentDropdown ? 'rotate-180' : ''}`} />
             </button>
 

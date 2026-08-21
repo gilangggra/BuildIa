@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { SupabaseGuard } from '../auth/supabase.guard';
+import { CreateProjectDto } from './dto/projects.dto';
 
 @UseGuards(SupabaseGuard)
 @Controller('v1/projects')
@@ -21,7 +22,7 @@ export class ProjectsController {
   }
 
   @Post()
-  create(@Request() req, @Body() createProjectDto: any) {
+  create(@Request() req, @Body() createProjectDto: CreateProjectDto) {
     return this.projectsService.create(req.user.userId, createProjectDto);
   }
 

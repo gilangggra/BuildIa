@@ -48,6 +48,7 @@ export class ProjectsService {
       .from('projects')
       .select('*')
       .eq('id', id)
+      .eq('owner_id', userId) // Defense-in-depth: enforce ownership server-side, not just via RLS
       .single();
 
     if (error || !data) {
@@ -97,6 +98,7 @@ export class ProjectsService {
       const owner = user.login;
 
       // 5. Create or get repository
+      let isNewRepo = false;
       try {
         await octokit.rest.repos.get({ owner, repo: repoName });
       } catch (err: any) {
@@ -107,39 +109,76 @@ export class ProjectsService {
             private: true,
             auto_init: true,
           });
+          isNewRepo = true;
         } else {
           throw err;
         }
       }
 
-      // 6. Push files (Simple loop for prototype, a real implementation would use trees/commits API for bulk push)
-      for (const art of artefacts) {
-        const path =
+      // 6. Atomic bulk push using GitHub Trees API
+      // Build blobs in parallel (no rate-limit risk — blobs are content-only, no branch ops)
+      const blobPromises = artefacts.map(async (art) => {
+        const filePath =
           art.type === 'code'
             ? `src/${art.name.replace(/\s+/g, '_')}.${art.format || 'txt'}`
             : `docs/${art.name.replace(/\s+/g, '_')}.${art.format || 'md'}`;
 
-        let sha = undefined;
-        try {
-          const { data: fileData } = (await octokit.rest.repos.getContent({
-            owner,
-            repo: repoName,
-            path,
-          })) as any;
-          sha = fileData.sha;
-        } catch (e) {
-          // File doesn't exist yet, safe to ignore
-        }
-
-        await octokit.rest.repos.createOrUpdateFileContents({
+        const { data: blob } = await octokit.rest.git.createBlob({
           owner,
           repo: repoName,
-          path,
-          message: `BuildIA: Add ${art.name}`,
-          content: Buffer.from(art.content).toString('base64'),
-          sha,
+          content: art.content,
+          encoding: 'utf-8',
         });
-      }
+
+        return {
+          path: filePath,
+          mode: '100644' as const,
+          type: 'blob' as const,
+          sha: blob.sha,
+        };
+      });
+
+      const treeItems = await Promise.all(blobPromises);
+
+      // Get base tree SHA from the default branch
+      const { data: refData } = await octokit.rest.git.getRef({
+        owner,
+        repo: repoName,
+        ref: 'heads/main',
+      });
+      const baseSha = refData.object.sha;
+
+      // Get the current commit to get its tree SHA
+      const { data: baseCommit } = await octokit.rest.git.getCommit({
+        owner,
+        repo: repoName,
+        commit_sha: baseSha,
+      });
+
+      // Create new tree atomically
+      const { data: newTree } = await octokit.rest.git.createTree({
+        owner,
+        repo: repoName,
+        base_tree: baseCommit.tree.sha,
+        tree: treeItems,
+      });
+
+      // Create the commit
+      const { data: newCommit } = await octokit.rest.git.createCommit({
+        owner,
+        repo: repoName,
+        message: `BuildIA: Deploy ${artefacts.length} artefact(s) from project "${project.name}"`,
+        tree: newTree.sha,
+        parents: [baseSha],
+      });
+
+      // Update the branch ref to point to the new commit (atomic!)
+      await octokit.rest.git.updateRef({
+        owner,
+        repo: repoName,
+        ref: 'heads/main',
+        sha: newCommit.sha,
+      });
 
       // 7. Update project status
       await this.supabaseService
@@ -151,6 +190,7 @@ export class ProjectsService {
       return {
         success: true,
         repoUrl: `https://github.com/${owner}/${repoName}`,
+        commitSha: newCommit.sha,
       };
     } catch (error: any) {
       console.error('GitHub Deployment Error:', error);

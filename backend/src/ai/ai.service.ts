@@ -5,8 +5,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { SupabaseService } from '../supabase/supabase.service';
 
+const AI_CALL_TIMEOUT_MS = 90_000; // 90 seconds — prevents hanging requests
+
 @Injectable()
 export class AiService {
+  // Cache AI clients per API key to avoid creating a new instance per request
+  private readonly clientCache = new Map<string, GoogleGenAI>();
+
   constructor(
     private configService: ConfigService,
     private supabaseService: SupabaseService,
@@ -29,7 +34,11 @@ export class AiService {
   }
 
   private getAiClient(apiKey: string): GoogleGenAI {
-    return new GoogleGenAI({ apiKey });
+    // Return cached client to avoid creating a new SDK instance per request
+    if (!this.clientCache.has(apiKey)) {
+      this.clientCache.set(apiKey, new GoogleGenAI({ apiKey }));
+    }
+    return this.clientCache.get(apiKey)!;
   }
 
   async generateEmbedding(text: string, userId?: string): Promise<number[]> {
@@ -76,12 +85,23 @@ export class AiService {
     try {
       const apiKey = await this.getUserApiKey(userId);
       const ai = this.getAiClient(apiKey);
-      const response = await ai.models.generateContent({
+
+      // Wrap in a timeout to prevent indefinitely hanging requests
+      const aiCallPromise = ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: contents,
         config: { systemInstruction: systemInstruction },
       });
-      
+
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error(`AI call timed out after ${AI_CALL_TIMEOUT_MS / 1000}s`)),
+          AI_CALL_TIMEOUT_MS,
+        ),
+      );
+
+      const response = await Promise.race([aiCallPromise, timeoutPromise]);
+
       return {
         text: response.text || '',
         usage: {

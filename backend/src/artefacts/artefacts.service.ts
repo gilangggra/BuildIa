@@ -40,6 +40,26 @@ export class ArtefactsService {
     return data;
   }
 
+  async remove(projectId: string, id: string) {
+    // Safety: prevent deleting approved/final artefacts that may be referenced by RAG
+    const artefact = await this.findOne(projectId, id);
+    if (artefact.status === 'approved' || artefact.status === 'final') {
+      throw new BadRequestException(
+        'Cannot delete an approved or final artefact. Set status to "draft" first.',
+      );
+    }
+
+    const { error } = await this.supabaseService
+      .getClient()
+      .from('artefacts')
+      .delete()
+      .eq('project_id', projectId)
+      .eq('id', id);
+
+    if (error) throw new InternalServerErrorException(error.message);
+    return { success: true, id };
+  }
+
   async generate(projectId: string, payload: any, userId: string) {
     // 1. Human-in-the-loop Check
     if (payload.agentType === 'code-generator') {
@@ -232,26 +252,36 @@ export class ArtefactsService {
     try {
       console.log(`[Magic Build] Started for project ${projectId}`);
       
-      // Step 1: Ideator (SRS)
+      // Step 1: Ideator generates SRS
+      // NOTE: Magic Build intentionally does NOT auto-approve the SRS artefact.
+      // The SRS is saved as 'draft' — the user can review and approve it from the UI.
+      // Subsequent agents use RAG context from approved artefacts (if any exist).
+      // This preserves the Human-in-the-Loop principle for the code generation step.
       console.log(`[Magic Build] Step 1: Ideator`);
       const srsPayload = { type: 'srs', agentType: 'ideator', prompt: userPrompt };
-      const srsArtefact = await this.generate(projectId, srsPayload, userId);
-      await this.update(projectId, srsArtefact.id, { status: 'approved' }, userId); // Auto-approve for the pipeline
+      await this.generate(projectId, srsPayload, userId);
 
-      // Step 2: Diagrammer
+      // Step 2: Diagrammer — uses the user's prompt as context (RAG will pick up any prior approved artefacts)
       console.log(`[Magic Build] Step 2: Diagrammer`);
-      const diagramPrompt = `Based on the SRS we just created for "${userPrompt}", create a system architecture diagram.`;
+      const diagramPrompt = `Based on the following requirements, create a system architecture diagram:\n\n"${userPrompt}"`;
       const diagramPayload = { type: 'diagram', agentType: 'diagrammer', prompt: diagramPrompt };
-      const diagramArtefact = await this.generate(projectId, diagramPayload, userId);
-      await this.update(projectId, diagramArtefact.id, { status: 'approved' }, userId);
+      await this.generate(projectId, diagramPayload, userId);
 
-      // Step 3: Coder
+      // Step 3: Coder — HITL guard in generate() will enforce SRS approval before code is written.
+      // If no approved SRS exists, this step will throw a BadRequestException (by design).
+      // In Magic Build flow, the coder runs optimistically; if the HITL check blocks it,
+      // the user will be notified that they need to approve the SRS draft first.
       console.log(`[Magic Build] Step 3: Coder`);
-      const codePrompt = `Based on the SRS and Architecture diagram we just created for "${userPrompt}", write the full source code for the main application entry point (e.g., App.jsx or similar) that satisfies the requirements. Use Tailwind CSS if styling is needed.`;
+      const codePrompt = `Based on the requirements: "${userPrompt}", write the full source code for the main application entry point (e.g., App.jsx or similar). Use Tailwind CSS if styling is needed.`;
       const codePayload = { type: 'code', agentType: 'code-generator', prompt: codePrompt };
-      await this.generate(projectId, codePayload, userId);
+      try {
+        await this.generate(projectId, codePayload, userId);
+      } catch (e: any) {
+        // If HITL guard blocks code generation, log it gracefully
+        console.warn(`[Magic Build] Coder step skipped: ${e.message}. User must approve SRS draft first.`);
+      }
 
-      console.log(`[Magic Build] Finished successfully for project ${projectId}`);
+      console.log(`[Magic Build] Finished for project ${projectId}`);
     } catch (e) {
       console.error(`[Magic Build] Failed for project ${projectId}`, e);
     }

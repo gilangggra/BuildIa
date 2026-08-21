@@ -1,6 +1,10 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { AgentsService } from './agents.service';
+import { SupabaseGuard } from '../auth/supabase.guard';
+import { CreateAgentDto } from './dto/agents.dto';
 
+// All agent endpoints require authentication — agents are user-scoped resources
+@UseGuards(SupabaseGuard)
 @Controller('v1/agents')
 export class AgentsController {
   constructor(private readonly agentsService: AgentsService) {}
@@ -11,7 +15,7 @@ export class AgentsController {
   }
 
   @Post()
-  async create(@Body() payload: any) {
+  async create(@Body() payload: CreateAgentDto) {
     return this.agentsService.create(payload);
   }
 }

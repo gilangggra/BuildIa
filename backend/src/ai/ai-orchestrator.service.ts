@@ -28,7 +28,7 @@ export class AiOrchestratorService {
           const supabase = this.supabaseService.getClient();
           const { data: matchedArtefacts, error } = await supabase.rpc('match_artefacts', {
             query_embedding: queryEmbedding,
-            match_threshold: 0.1,
+            match_threshold: 0.7, // Minimum 70% similarity — prevents noise context pollution
             match_count: 3,
             p_project_id: projectId
           });

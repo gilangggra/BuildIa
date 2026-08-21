@@ -171,22 +171,17 @@ export default function LandingPage() {
                   </div>
                </div>
                
-               {/* Main Editor */}
+               {/* Main Editor — renders the live typing animation */}
                <div className="flex-1 bg-white p-6 font-mono text-[15px] leading-relaxed relative overflow-hidden">
                  <div className="flex text-[#181818]">
                    <div className="w-8 text-[#181818]/30 select-none text-right pr-4 mr-4 flex flex-col gap-1">
-                     <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span>
+                     {[1,2,3,4,5,6].map(n => <span key={n}>{n}</span>)}
                    </div>
-                   <div className="whitespace-pre-wrap font-medium">
-                     <span className="text-[#181818]/50">import</span> {"{ AIOrchestrator }"} <span className="text-[#181818]/50">from</span> "@buildia/core";
-                     <br/><br/>
-                     <span className="text-[#181818]/50">const</span> agent = <span className="text-[#181818]/50">new</span> AIOrchestrator();
-                     <br/><br/>
-                     <span className="text-[#181818]/40 italic">// Analyzing architecture...</span>
-                     <br/>
-                     <span className="text-[#181818]/50">await</span> agent.deployFullStackApp();
-                     
-                     <span className="inline-block w-2 h-4 bg-[#181818] animate-pulse ml-1 align-middle" />
+                   <div className="flex-1 overflow-hidden">
+                     <pre className="whitespace-pre-wrap font-medium text-[#181818] text-[14px] leading-relaxed">
+                       {typedCode}
+                     </pre>
+                     <span className="inline-block w-2 h-4 bg-[#181818] animate-pulse ml-0.5 align-middle" />
                    </div>
                  </div>
                </div>
@@ -288,17 +283,17 @@ export default function LandingPage() {
             <div>
               <h4 className="text-[#181818] font-semibold mb-6 tracking-tight">Product</h4>
               <div className="flex flex-col gap-4 text-[#181818]/70 font-medium text-[15px]">
-                <Link href="#" className="hover:text-[#181818] transition-colors">Features</Link>
-                <Link href="#" className="hover:text-[#181818] transition-colors">Pricing</Link>
-                <Link href="#" className="hover:text-[#181818] transition-colors">Changelog</Link>
+                <Link href="#features" className="hover:text-[#181818] transition-colors">Features</Link>
+                <Link href="#pricing" className="hover:text-[#181818] transition-colors">Pricing</Link>
+                <Link href="#how-it-works" className="hover:text-[#181818] transition-colors">How it Works</Link>
               </div>
             </div>
             <div>
-              <h4 className="text-[#181818] font-semibold mb-6 tracking-tight">Company</h4>
+              <h4 className="text-[#181818] font-semibold mb-6 tracking-tight">Platform</h4>
               <div className="flex flex-col gap-4 text-[#181818]/70 font-medium text-[15px]">
-                <Link href="#" className="hover:text-[#181818] transition-colors">About Us</Link>
-                <Link href="#" className="hover:text-[#181818] transition-colors">Careers</Link>
-                <Link href="#" className="hover:text-[#181818] transition-colors">Contact</Link>
+                <Link href="/auth" className="hover:text-[#181818] transition-colors">Get Started</Link>
+                <Link href="/dashboard" className="hover:text-[#181818] transition-colors">Dashboard</Link>
+                <Link href="#features" className="hover:text-[#181818] transition-colors">Documentation</Link>
               </div>
             </div>
           </div>
